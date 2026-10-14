@@ -1,0 +1,46 @@
+{
+ "tryout": "01_tabular_q_learning",
+ "source": "tools/train_tabular.js (JS engine, deterministic), run 2026-10-12; numbers copied from results/phase1_tabular/TRAINING_LOG.md",
+ "modelFile": "models/tabular_q_12x12_seed1.json",
+ "config": {"epochs": 200, "episodesPerEpoch": 100, "checkpointEvery": 25, "alpha": 0.1, "gamma": 0.95, "epsStart": 1.0, "epsEnd": 0.01, "epsDecayEpochs": 100, "evalEpisodes": 500, "evalSeed0": 100000},
+ "baselines12": {"random": 0.168, "greedy": 20.416},
+ "runs": {
+  "12x12_seed1": {"winScore": 141, "checkpoints": [
+   {"epoch": 0, "eps": 1.0, "trainMean": null, "trainMax": null, "trainWins": null, "evalMean": 0.04, "median": 0, "p90": 0, "max": 1, "wins": 0, "wall": 500, "self": 0, "timeout": 0},
+   {"epoch": 25, "eps": 0.753, "trainMean": 0.41, "trainMax": 4, "trainWins": 0, "evalMean": 6.67, "median": 6, "p90": 13, "max": 23, "wins": 0, "wall": 138, "self": 256, "timeout": 106},
+   {"epoch": 50, "eps": 0.505, "trainMean": 1.24, "trainMax": 7, "trainWins": 0, "evalMean": 12.51, "median": 12, "p90": 19, "max": 28, "wins": 0, "wall": 38, "self": 462, "timeout": 0},
+   {"epoch": 75, "eps": 0.258, "trainMean": 2.68, "trainMax": 14, "trainWins": 0, "evalMean": 18.09, "median": 18, "p90": 27, "max": 40, "wins": 0, "wall": 39, "self": 461, "timeout": 0},
+   {"epoch": 100, "eps": 0.01, "trainMean": 7.8, "trainMax": 37, "trainWins": 0, "evalMean": 20.03, "median": 19, "p90": 29, "max": 49, "wins": 0, "wall": 40, "self": 460, "timeout": 0},
+   {"epoch": 125, "eps": 0.01, "trainMean": 17.45, "trainMax": 46, "trainWins": 0, "evalMean": 19.16, "median": 19, "p90": 28, "max": 40, "wins": 0, "wall": 44, "self": 456, "timeout": 0},
+   {"epoch": 150, "eps": 0.01, "trainMean": 17.74, "trainMax": 46, "trainWins": 0, "evalMean": 19.75, "median": 20, "p90": 29, "max": 41, "wins": 0, "wall": 31, "self": 469, "timeout": 0},
+   {"epoch": 175, "eps": 0.01, "trainMean": 17.95, "trainMax": 43, "trainWins": 0, "evalMean": 21.68, "median": 21, "p90": 31, "max": 42, "wins": 0, "wall": 41, "self": 459, "timeout": 0},
+   {"epoch": 200, "eps": 0.01, "trainMean": 18.17, "trainMax": 47, "trainWins": 0, "evalMean": 20.08, "median": 20, "p90": 28, "max": 39, "wins": 0, "wall": 58, "self": 442, "timeout": 0}
+  ]},
+  "6x6_seed1": {"winScore": 33, "checkpoints": [
+   {"epoch": 0, "eps": 1.0, "trainMean": null, "trainMax": null, "trainWins": null, "evalMean": 0.07, "median": 0, "p90": 0, "max": 2, "wins": 0, "wall": 500, "self": 0, "timeout": 0},
+   {"epoch": 25, "eps": 0.753, "trainMean": 0.39, "trainMax": 4, "trainWins": 0, "evalMean": 6.83, "median": 6, "p90": 11, "max": 15, "wins": 0, "wall": 132, "self": 368, "timeout": 0},
+   {"epoch": 50, "eps": 0.505, "trainMean": 0.97, "trainMax": 6, "trainWins": 0, "evalMean": 8.5, "median": 8, "p90": 13, "max": 18, "wins": 0, "wall": 61, "self": 439, "timeout": 0},
+   {"epoch": 75, "eps": 0.258, "trainMean": 2.27, "trainMax": 13, "trainWins": 0, "evalMean": 12.13, "median": 12, "p90": 18, "max": 26, "wins": 0, "wall": 132, "self": 368, "timeout": 0},
+   {"epoch": 100, "eps": 0.01, "trainMean": 6.13, "trainMax": 25, "trainWins": 0, "evalMean": 13.75, "median": 14, "p90": 19, "max": 28, "wins": 0, "wall": 165, "self": 335, "timeout": 0},
+   {"epoch": 125, "eps": 0.01, "trainMean": 11.69, "trainMax": 33, "trainWins": 2, "evalMean": 12.85, "median": 12, "p90": 19, "max": 30, "wins": 0, "wall": 192, "self": 308, "timeout": 0},
+   {"epoch": 150, "eps": 0.01, "trainMean": 12.18, "trainMax": 28, "trainWins": 0, "evalMean": 13.28, "median": 13, "p90": 19, "max": 28, "wins": 0, "wall": 116, "self": 384, "timeout": 0},
+   {"epoch": 175, "eps": 0.01, "trainMean": 11.55, "trainMax": 33, "trainWins": 1, "evalMean": 12.75, "median": 13, "p90": 18, "max": 24, "wins": 0, "wall": 114, "self": 386, "timeout": 0},
+   {"epoch": 200, "eps": 0.01, "trainMean": 11.85, "trainMax": 33, "trainWins": 1, "evalMean": 13.16, "median": 13, "p90": 18, "max": 29, "wins": 0, "wall": 107, "self": 393, "timeout": 0}
+  ]}
+ },
+ "seedCurves": {
+  "epochs": [0, 25, 50, 75, 100, 125, 150, 175, 200],
+  "12x12": {"seed1": [0.04, 6.67, 12.51, 18.09, 20.03, 19.16, 19.75, 21.68, 20.08], "seed2": [0.04, 8.24, 11.45, 18.18, 21.21, 19.73, 19.21, 19.24, 21.25], "seed3": [0.04, 8.96, 12.14, 19.07, 18.97, 20.0, 19.91, 19.03, 20.13]},
+  "6x6": {"seed1": [0.07, 6.83, 8.5, 12.13, 13.75, 12.85, 13.28, 12.75, 13.16], "seed2": [0.07, 7.67, 8.47, 11.86, 13.72, 13.42, 13.42, 13.17, 13.13], "seed3": [0.07, 7.62, 8.44, 11.74, 13.3, 13.12, 12.27, 12.92, 12.65]},
+  "evalWins6x6": {"seed2_epoch100": 1}
+ },
+ "sweep": {"note": "10k episodes, seeds 11-13, 300 eval games each", "gammas": [0.5, 0.8, 0.9, 0.95, 0.99], "alphas": [0.05, 0.1, 0.3],
+  "means": [[[22.02, 20.64, 19.73], [22.48, 22.19, 21.54], [18.39, 20.56, 22.69]],
+            [[22.25, 20.97, 20.45], [19.81, 21.26, 21.8], [9.51, 19.95, 19.39]],
+            [[22.0, 20.72, 20.97], [20.38, 19.34, 19.24], [19.83, 17.87, 20.89]],
+            [[22.65, 21.53, 18.55], [18.64, 21.22, 20.56], [21.42, 18.71, 13.04]],
+            [[17.57, 14.74, 16.33], [18.88, 17.86, 18.65], [24.05, 11.92, 10.1]]]},
+ "transfer": {"sizes": [10, 16, 20], "tabq": [18.35, 25.42, 29.7], "greedy": [17.89, 24.5, 27.97]},
+ "agreementWithGreedy": 0.876,
+ "statesVisited": 256
+}
