@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Snake RL — play, watch, benchmark</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --lcd: #9bbc0f; --lcd2: #8bac0f; --ink: #0f380f; --mid: #306230; --bg: #1d1f1b; --fg: #e8eadf; --mut: #9aa08f; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.4 system-ui, -apple-system, Segoe UI, sans-serif; background: var(--bg); color: var(--fg); }
+  main { display: grid; grid-template-columns: auto 340px; gap: 20px; padding: 20px; max-width: 1100px; margin: auto; }
+  h1 { font-size: 18px; margin: 0 0 4px; } .mut { color: var(--mut); font-size: 12px; }
+  .screen { position: relative; background: var(--lcd); padding: 10px; border-radius: 10px; box-shadow: inset 0 0 0 4px var(--lcd2); display: inline-block; }
+  canvas { display: block; image-rendering: pixelated; }
+  .hud { display: flex; justify-content: space-between; font: bold 16px ui-monospace, Consolas, monospace; color: var(--ink); margin-bottom: 6px; }
+  .overlay { position: absolute; inset: 36px 10px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+             font: bold 20px ui-monospace, Consolas, monospace; color: var(--ink); background: rgba(155,188,15,.75); text-align: center; pointer-events: none; }
+  .overlay small { font-size: 13px; font-weight: normal; margin-top: 6px; }
+  .hidden { display: none; }
+  .panel { background: #26291f; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+  .panel h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--mut); margin: 0 0 8px; }
+  label { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 6px 0; }
+  select, input[type=number], textarea { background: #15170f; color: var(--fg); border: 1px solid #444; border-radius: 4px; padding: 3px 6px; }
+  button { background: var(--mid); color: #fff; border: 0; border-radius: 4px; padding: 6px 10px; cursor: pointer; margin: 2px 2px 2px 0; }
+  button:hover { filter: brightness(1.2); }
+  pre { background: #15170f; padding: 8px; border-radius: 4px; white-space: pre-wrap; font-size: 12px; margin: 6px 0 0; max-height: 220px; overflow: auto; }
+  .q { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; text-align: center; font: 12px ui-monospace, monospace; }
+  .q div { background: #15170f; border-radius: 4px; padding: 4px; } .q .best { outline: 2px solid var(--lcd); }
+  textarea { width: 100%; height: 50px; font: 11px ui-monospace, monospace; }
+  code { background: #15170f; padding: 0 3px; border-radius: 3px; font-size: 11px; }
+
+  :focus-visible { outline: 2px solid var(--lcd); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+  .now { min-height: 18px; margin: 6px 0 0; color: var(--lcd); font-weight: 600; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 4px 0 8px; }
+  button.primary { background: var(--lcd); color: var(--ink); font-weight: 700; padding: 8px 12px; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  .seg { display: inline-flex; border-radius: 6px; overflow: hidden; border: 1px solid #444; }
+  .seg button { border-radius: 0; margin: 0; background: #2f3326; } .seg button[aria-pressed=true] { background: var(--mid); box-shadow: inset 0 -3px 0 var(--lcd); }
+  #agentList { display: flex; flex-direction: column; gap: 6px; max-height: min(340px, 55vh); overflow: auto; padding-right: 2px; }
+  .fam { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--mut); margin: 8px 0 0; }
+  button.agent { display: flex; flex-direction: column; gap: 3px; text-align: left; width: 100%; margin: 0; padding: 8px 10px; background: #1f2218; border: 1px solid #3a3f30; border-radius: 8px; color: var(--fg); }
+  button.agent:hover { border-color: #6b7a45; filter: none; background: #23271b; }
+  button.agent.sel { border-color: var(--lcd); background: #2a3220; box-shadow: 0 0 0 1px var(--lcd) inset; }
+  .a-desc { color: var(--mut); font-size: 12px; } .a-stats { font: 11.5px ui-monospace, Consolas, monospace; color: #cfd6bd; }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+  .chip { font-size: 10.5px; padding: 1px 7px; border-radius: 999px; background: #2f3326; color: #bfc6ad; border: 1px solid #444b38; }
+  .chip.ok { color: #b7e08a; } .chip.warn { color: #e6b450; } .chip.info { color: #8fc1e8; }
+  .badge { font-size: 10.5px; padding: 1px 7px; border-radius: 999px; background: var(--lcd); color: var(--ink); font-weight: 700; vertical-align: 1px; }
+  .note { font-size: 12px; color: var(--mut); margin: 6px 0 0; min-height: 4px; } .note.bad { color: #f0a09a; } .note.good { color: #b7e08a; } .note.warn { color: #e6b450; }
+  #agentCard h3 { margin: 12px 0 6px; font-size: 15px; } #agentCard h4 { margin: 10px 0 4px; font-size: 12px; color: var(--mut); text-transform: uppercase; letter-spacing: .06em; }
+  table.kv { width: 100%; border-collapse: collapse; font-size: 12px; } table.kv td { padding: 2px 0; vertical-align: top; } table.kv td:first-child { color: var(--mut); padding-right: 10px; white-space: nowrap; }
+  .bar { display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: #15170f; } .bar span { display: block; height: 100%; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; color: var(--mut); margin-top: 4px; } .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 4px; }
+  svg.spark { width: 100%; height: 70px; background: #15170f; border-radius: 6px; }
+  .links { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 10px; } .links a { color: var(--lcd); }
+  #dropzone { border: 2px dashed #4a5238; border-radius: 8px; padding: 10px; transition: border-color .15s, background .15s; } #dropzone.over { border-color: var(--lcd); background: #262c1c; }
+  .cmpBoards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .cmpBoards figure { margin: 0; text-align: center; background: var(--lcd); border-radius: 6px; padding: 6px; color: var(--ink); }
+  .cmpBoards canvas { max-width: 100%; image-rendering: pixelated; } .cmpBoards figcaption { font: 600 11px ui-monospace, monospace; }
+  .cmpBoards .sc { font: 700 14px ui-monospace, monospace; }
+  select { max-width: 100%; }
+  .skip { position: absolute; left: -999px; } .skip:focus { left: 8px; top: 8px; background: var(--lcd); color: var(--ink); padding: 6px 10px; z-index: 9; }
+  kbd { background: #15170f; border: 1px solid #555; border-radius: 3px; padding: 0 4px; font-size: 11px; }
+  @media (min-width: 861px) { main > section { position: sticky; top: 12px; align-self: start; } }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#pretrained">Skip to pretrained agents</a>
+<main>
+  <section>
+    <h1>Snake RL</h1>
+    <div class="mut"><kbd>←↑→↓</kbd> / <kbd>WASD</kbd> steer · <kbd>Space</kbd> / <kbd>P</kbd> pause · <kbd>R</kbd> / <kbd>Enter</kbd> restart · <kbd>+</kbd>/<kbd>-</kbd> speed · <kbd>B</kbd> watch the best agent</div>
+    <div class="now" id="now" aria-live="polite"></div>
+    <div class="screen" style="margin-top:10px">
+      <div class="hud"><span id="score">0000</span><span id="status">READY</span><span id="best">HI 0</span></div>
+      <canvas id="cv" tabindex="0"></canvas>
+      <div class="overlay" id="overlay"></div>
+    </div>
+  </section>
+
+  <aside>
+    <div class="panel" id="pretrained">
+      <h2>Pretrained agents</h2>
+      <div class="row">
+        <button type="button" id="watchBest" class="primary" title="Shortcut: B">▶ Watch the best agent</button>
+        <span class="seg" id="presets" role="group" aria-label="Playback speed">
+          <button type="button" data-p="slow" aria-pressed="false">Slow</button><button type="button" data-p="normal" aria-pressed="true">Normal</button><button type="button" data-p="fast" aria-pressed="false">Fast</button><button type="button" data-p="turbo" aria-pressed="false">Turbo</button>
+        </span>
+      </div>
+      <div id="agentList" role="listbox" aria-label="Pretrained agents, grouped by algorithm family and sorted by test score"></div>
+      <div id="agentMsg" class="note" role="status" aria-live="polite"></div>
+      <div id="agentCard"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Game</h2>
+      <label>Controller <select id="ctrl"></select></label>
+      <label>Board <select id="size"><option>6</option><option>8</option><option>10</option><option selected>12</option><option>16</option><option>20</option></select></label>
+      <label>Seed <input id="seed" type="number" value="0" style="width:110px"></label>
+      <label>Speed <span><input id="speed" type="range" min="2" max="60" value="8"> <span id="speedVal">8</span>/s</span></label>
+      <label>Turbo (agent steps/frame) <input id="turbo" type="number" value="1" min="1" max="5000" style="width:80px"></label>
+      <button id="restart">Restart</button><button id="pause">Pause</button>
+      <label style="justify-content:flex-start"><input id="loop" type="checkbox" checked> auto-restart agent episodes</label>
+    </div>
+
+    <div class="panel">
+      <h2>Agent view</h2>
+      <div class="mut">Q-values / logits for [straight, right, left] in the current state.</div>
+      <div class="q" id="qv"><div>–</div><div>–</div><div>–</div></div>
+      <div class="mut" id="feat" style="margin-top:6px;font-family:monospace"></div>
+    </div>
+
+    <div class="panel" id="comparePanel">
+      <h2>Compare two agents</h2>
+      <div class="mut">Both play the same seed at the same time. Speed follows the presets above.</div>
+      <div class="row"><label style="flex:1">A <select id="cmpA" aria-label="Agent A"></select></label><label style="flex:1">B <select id="cmpB" aria-label="Agent B"></select></label></div>
+      <div class="row"><label>Seed <input id="cmpSeed" type="number" value="100000" style="width:100px"></label><button type="button" id="cmpGo">Race</button>
+        <label style="justify-content:flex-start"><input id="cmpLoop" type="checkbox" checked> next seed when both end</label></div>
+      <div class="cmpBoards"><figure><canvas id="cmpCa" width="190" height="190"></canvas><figcaption id="cmpCapA">A</figcaption><div class="sc" id="cmpScA">–</div></figure>
+        <figure><canvas id="cmpCb" width="190" height="190"></canvas><figcaption id="cmpCapB">B</figcaption><div class="sc" id="cmpScB">–</div></figure></div>
+      <div class="note" id="cmpMsg" role="status"></div><div class="mut" id="cmpTally"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Headless benchmark</h2>
+      <label>Episodes <input id="neps" type="number" value="1000" style="width:90px"></label>
+      <label>First seed <input id="seed0" type="number" value="100000" style="width:110px"></label>
+      <button id="bench">Run (no rendering)</button>
+      <pre id="benchOut">Evaluates the selected controller greedily on held-out seeds.</pre>
+    </div>
+
+    <div class="panel" id="customPanel">
+      <h2>Custom model</h2>
+      <div id="dropzone">
+        <div class="mut">Your own model, kept separate from the pretrained list. Choose or drop a <code>.json</code> exported by <code>python/export_model.py</code> (for example <code>best.json</code>).</div>
+        <input type="file" id="file" accept=".json,application/json" aria-label="Choose a model JSON file">
+      </div>
+      <button type="button" id="trainQ">Train tabular Q here (≈ 1–2 s)</button>
+      <div id="modelOut" class="note" role="status" aria-live="polite">Nothing loaded.</div>
+    </div>
+
+    <div class="panel">
+      <h2>Replay</h2>
+      <div class="mut">Episodes are deterministic: {seed, width, height, actions} reproduces one exactly.</div>
+      <textarea id="replayIn" placeholder='{"seed":100000,"width":12,"height":12,"actions":"0012..."}'></textarea>
+      <button id="replay">Play replay</button><button id="copyLast">Copy last episode</button>
+    </div>
+  </aside>
+</main>
+
+<script id="snake-core">
+// === SNAKE CORE BEGIN ===
+// Engine shared by this page, node tools (game/snake_core.js extracts this block) and, by line-for-line
+// mirroring, python/snake_rl/core.py. Change a rule here → change it there; tests/test_parity.py catches drift.
+(function (root) {
+  'use strict';
+
+  // Clockwise order, so "turn right" is dir+1 and "turn left" is dir+3 (mod 4). y grows downward.
+  const DIRS = [[1, 0], [0, 1], [-1, 0], [0, -1]]; // R, D, L, U
+  const ACTIONS = { STRAIGHT: 0, RIGHT: 1, LEFT: 2 };
+
+  // mulberry32: tiny, fast, reproducible bit-for-bit in Python with 32-bit masking.
+  class Rng {
+    constructor(seed) { this.s = seed >>> 0; }
+    nextU32() {
+      this.s = (this.s + 0x6D2B79F5) >>> 0;
+      let t = this.s;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return (t ^ (t >>> 14)) >>> 0;
+    }
+    // Integer maths, not float, so Python computes the identical index (u*n < 2^53 always here).
+    int(n) { return Math.floor(this.nextU32() * n / 4294967296); }
+  }
+
+  class SnakeGame {
+    constructor({ width = 12, height = 12, seed = 0, idleLimit = 100 } = {}) {
+      this.w = width; this.h = height; this.idleLimit = idleLimit;
+      this.rng = new Rng(seed);
+      this.occ = new Uint8Array(width * height);
+      this.reset();
+    }
+
+    // reset(seed) restarts the RNG; reset() continues the stream (what auto-reset in the vec env does).
+    reset(seed) {
+      if (seed !== undefined && seed !== null) this.rng = new Rng(seed);
+      const cx = Math.floor(this.w / 2), cy = Math.floor(this.h / 2);
+      this.body = [[cx, cy], [cx - 1, cy], [cx - 2, cy]]; // head first
+      this.occ.fill(0);
+      for (const [x, y] of this.body) this.occ[y * this.w + x] = 1;
+      this.dir = 0;
+      this.score = 0; this.steps = 0; this.sinceFood = 0;
+      this.done = false; this.won = false; this.cause = null;
+      this.placeFood();
+      return this;
+    }
+
+    placeFood() {
+      const free = [];
+      for (let y = 0; y < this.h; y++)
+        for (let x = 0; x < this.w; x++)
+          if (!this.occ[y * this.w + x]) free.push([x, y]);
+      this.food = free.length ? free[this.rng.int(free.length)] : null;
+    }
+
+    // The tail cell vacates on this tick, so it is not an obstacle. Food never sits on the body,
+    // so "moving into the tail while eating" can't happen and needs no special case.
+    blocked(x, y) {
+      if (x < 0 || y < 0 || x >= this.w || y >= this.h) return true;
+      const t = this.body[this.body.length - 1];
+      return this.occ[y * this.w + x] === 1 && !(x === t[0] && y === t[1]);
+    }
+
+    step(action) {
+      if (this.done) throw new Error('step() after episode end; call reset()');
+      if (action === ACTIONS.RIGHT) this.dir = (this.dir + 1) % 4;
+      else if (action === ACTIONS.LEFT) this.dir = (this.dir + 3) % 4;
+      const [dx, dy] = DIRS[this.dir];
+      const nx = this.body[0][0] + dx, ny = this.body[0][1] + dy;
+      this.steps++; this.sinceFood++;
+
+      if (this.blocked(nx, ny)) {
+        this.done = true;
+        this.cause = (nx < 0 || ny < 0 || nx >= this.w || ny >= this.h) ? 'wall' : 'self';
+        return { reward: -1, terminated: true, truncated: false, event: this.cause };
+      }
+      const eating = this.food !== null && nx === this.food[0] && ny === this.food[1];
+      if (!eating) {
+        const t = this.body.pop();
+        this.occ[t[1] * this.w + t[0]] = 0;
+      }
+      this.body.unshift([nx, ny]);
+      this.occ[ny * this.w + nx] = 1;
+
+      if (eating) {
+        this.score++; this.sinceFood = 0;
+        if (this.body.length === this.w * this.h) {
+          this.done = true; this.won = true; this.food = null; this.cause = 'win';
+          return { reward: 1, terminated: true, truncated: false, event: 'win' };
+        }
+        this.placeFood();
+        return { reward: 1, terminated: false, truncated: false, event: 'food' };
+      }
+      // Truncation, not termination: the state isn't terminal, we just stop a looping agent.
+      // Learners must still bootstrap through it (Pardo et al. 2018).
+      if (this.sinceFood > this.idleLimit * this.body.length) {
+        this.done = true; this.cause = 'timeout';
+        return { reward: 0, terminated: false, truncated: true, event: 'timeout' };
+      }
+      return { reward: 0, terminated: false, truncated: false, event: null };
+    }
+
+    // Human input is absolute (arrow keys); agents act relative. Reversal maps to straight.
+    relativeFromAbsolute(absDir) {
+      const d = (absDir - this.dir + 4) % 4;
+      return d === 1 ? ACTIONS.RIGHT : d === 3 ? ACTIONS.LEFT : ACTIONS.STRAIGHT;
+    }
+  }
+
+  // ---- features (mirror: python/snake_rl/features.py) ----
+
+  // 11 binary features: danger [straight, right, left], heading one-hot [R, D, L, U], food [left, right, up, down].
+  function basicFeatures(g) {
+    const [hx, hy] = g.body[0];
+    const f = new Array(11).fill(0);
+    const rel = [g.dir, (g.dir + 1) % 4, (g.dir + 3) % 4];
+    for (let i = 0; i < 3; i++) { const [dx, dy] = DIRS[rel[i]]; f[i] = g.blocked(hx + dx, hy + dy) ? 1 : 0; }
+    f[3 + g.dir] = 1;
+    if (g.food) {
+      f[7] = g.food[0] < hx ? 1 : 0; f[8] = g.food[0] > hx ? 1 : 0;
+      f[9] = g.food[1] < hy ? 1 : 0; f[10] = g.food[1] > hy ? 1 : 0;
+    }
+    return f;
+  }
+
+  function basicStateIndex(g) {
+    const f = basicFeatures(g);
+    let s = 0;
+    for (let i = 0; i < 11; i++) s |= f[i] << i;
+    return s;
+  }
+
+  // Free area reachable from (sx,sy), tail counted as free. Approximate (the body moves while you
+  // travel) but it is exactly the signal the 11 features lack: "will this move trap me?".
+  function reachable(g, sx, sy) {
+    if (g.blocked(sx, sy)) return 0;
+    const seen = new Uint8Array(g.w * g.h);
+    const stack = [[sx, sy]]; seen[sy * g.w + sx] = 1; let n = 0;
+    while (stack.length) {
+      const [x, y] = stack.pop(); n++;
+      for (const [dx, dy] of DIRS) {
+        const ax = x + dx, ay = y + dy;
+        if (ax < 0 || ay < 0 || ax >= g.w || ay >= g.h) continue;
+        const k = ay * g.w + ax;
+        if (seen[k] || g.blocked(ax, ay)) continue;
+        seen[k] = 1; stack.push([ax, ay]);
+      }
+    }
+    return n;
+  }
+
+  // 15 features: basic 11 + reachable-area fraction for [straight, right, left] + length fraction.
+  function extendedFeatures(g) {
+    const f = basicFeatures(g);
+    const [hx, hy] = g.body[0];
+    const area = g.w * g.h;
+    for (const d of [g.dir, (g.dir + 1) % 4, (g.dir + 3) % 4]) {
+      const [dx, dy] = DIRS[d];
+      f.push(reachable(g, hx + dx, hy + dy) / area);
+    }
+    f.push(g.body.length / area);
+    return f;
+  }
+
+  // Grid observation for the CNN agents, shape (4, h+2, w+2), flattened channel-major like PyTorch.
+  // ch0 body recency (head 1 → tail 1/L, so heading is visible), ch1 head, ch2 food, ch3 wall ring.
+  // Mirror: python/snake_rl/features.py::grid_obs and vec_env.py::_obs.
+  function gridObservation(g) {
+    const W = g.w + 2, H = g.h + 2, plane = W * H;
+    const x = new Float32Array(4 * plane);
+    const L = g.body.length;
+    g.body.forEach(([bx, by], i) => { x[(by + 1) * W + bx + 1] = (L - i) / L; });
+    x[plane + (g.body[0][1] + 1) * W + g.body[0][0] + 1] = 1;
+    if (g.food) x[2 * plane + (g.food[1] + 1) * W + g.food[0] + 1] = 1;
+    for (let r = 0; r < H; r++) for (let c = 0; c < W; c++)
+      if (r === 0 || c === 0 || r === H - 1 || c === W - 1) x[3 * plane + r * W + c] = 1;
+    return { data: x, shape: [4, H, W] };
+  }
+
+  // Tryout 05 observation: a fixed 14x14 canvas (board at offset 1, everything outside is wall) so one network plays every
+  // board up to 12x12. Channels: 0 tail order (age/length), 1 head, 2 food, 3 wall, 4 length/cells, 5 (win6) reachable area.
+  // Mirrors python/snake_rl/features.py::win_obs and TorchSnakeVecEnv._win.
+  function gridObservationWin(g, reach) {
+    const C = 14, S = g.w, plane = C * C, nch = reach ? 6 : 5, x = new Float32Array(nch * plane), L = g.body.length;
+    g.body.forEach(([bx, by], i) => { x[(by + 1) * C + bx + 1] = (L - i) / L; });
+    x[plane + (g.body[0][1] + 1) * C + g.body[0][0] + 1] = 1;
+    if (g.food) x[2 * plane + (g.food[1] + 1) * C + g.food[0] + 1] = 1;
+    for (let r = 0; r < C; r++) for (let c = 0; c < C; c++) x[3 * plane + r * C + c] = (r >= 1 && r <= S && c >= 1 && c <= S) ? 0 : 1;
+    for (let r = 1; r <= S; r++) for (let c = 1; c <= S; c++) x[4 * plane + r * C + c] = L / (S * S);
+    if (reach) {
+      const seen = new Uint8Array(S * S), stack = [[g.body[0][0], g.body[0][1]]];
+      while (stack.length) {
+        const [cx, cy] = stack.pop();
+        for (const [dx, dy] of DIRS) {
+          const nx = cx + dx, ny = cy + dy;
+          if (nx >= 0 && ny >= 0 && nx < S && ny < S && !g.occ[ny * S + nx] && !seen[ny * S + nx]) { seen[ny * S + nx] = 1; stack.push([nx, ny]); }
+        }
+      }
+      for (let i = 0; i < S * S; i++) if (seen[i]) x[5 * plane + (Math.floor(i / S) + 1) * C + (i % S) + 1] = 1;
+    }
+    return { data: x, shape: [nch, C, C] };
+  }
+
+  // "Trap" mask (tryout 05): [straight, right, left] -> true if the move kills at once OR leads into a region too small for the snake.
+  // Time-aware flood fill: a body cell can be entered at move m once its age <= m (the tail keeps freeing cells); K = cells/2 + 2
+  // expansions; trap when the reachable area < length (+1 if the move eats). If every move is a trap only instant deaths are
+  // blocked. Mirrors python/snake_rl/features.py::trap_danger and TorchSnakeVecEnv.danger_trap.
+  function trapDanger(g) {
+    const S = g.w, L = g.body.length, age = new Map(), key = (x, y) => y * S + x;
+    g.body.forEach(([bx, by], i) => age.set(key(bx, by), L - i));
+    const [hx, hy] = g.body[0], inst = [], areas = [], cands = [];
+    for (const d of [g.dir, (g.dir + 1) % 4, (g.dir + 3) % 4]) {
+      const nx = hx + DIRS[d][0], ny = hy + DIRS[d][1];
+      const dead = nx < 0 || ny < 0 || nx >= S || ny >= S || (age.get(key(nx, ny)) || 0) > 1;
+      inst.push(dead); cands.push([nx, ny]);
+      if (dead) { areas.push(0); continue; }
+      let reach = new Set([key(nx, ny)]);
+      for (let m = 2; m < S * S / 2 + 3; m++) {
+        const nw = new Set(reach);
+        for (const k of reach) {
+          const cx = k % S, cy = Math.floor(k / S);
+          for (const [dx, dy] of DIRS) {
+            const qx = cx + dx, qy = cy + dy;
+            if (qx >= 0 && qy >= 0 && qx < S && qy < S && (age.get(key(qx, qy)) || 0) <= m) nw.add(key(qx, qy));
+          }
+        }
+        reach = nw;
+      }
+      areas.push(reach.size);
+    }
+    const trap = [0, 1, 2].map(j => !inst[j] && areas[j] < L + (g.food && cands[j][0] === g.food[0] && cands[j][1] === g.food[1] ? 1 : 0));
+    let ok = [0, 1, 2].map(j => !(inst[j] || trap[j]));
+    if (!ok.some(Boolean)) ok = inst.map(v => !v);
+    return ok.map(v => !v);
+  }
+
+  // Non-RL reference: follow a Hamiltonian cycle of the board. Visits every cell once, so the snake can never trap itself and
+  // fills the board on every seed. Even square boards of at least 6x6 (the start body must lie on the cycle).
+  const HAM = {};
+  function hamCycle(S) {
+    if (HAM[S]) return HAM[S];
+    if (S % 2 || S < 6) throw new Error('the Hamiltonian-cycle agent needs an even board of at least 6x6');
+    const cyc = [];
+    for (let x = 0; x < S; x++) cyc.push([x, 0]);
+    for (let r = 1; r < S; r++) { if (r % 2) for (let x = S - 1; x > 0; x--) cyc.push([x, r]); else for (let x = 1; x < S; x++) cyc.push([x, r]); }
+    for (let y = S - 1; y > 0; y--) cyc.push([0, y]);
+    const c = S / 2, k = cyc.findIndex(q => q[0] === c && q[1] === c), nx = cyc[(k + 1) % cyc.length];
+    if (!(nx[0] === c + 1 && nx[1] === c)) cyc.reverse();
+    const pos = new Map(); cyc.forEach((q, i) => pos.set(q[0] + ',' + q[1], i));
+    return (HAM[S] = { cyc, pos });
+  }
+  function hamiltonianAction(g) {
+    const { cyc, pos } = hamCycle(g.w), [hx, hy] = g.body[0], [nx, ny] = cyc[(pos.get(hx + ',' + hy) + 1) % cyc.length];
+    const d = DIRS.findIndex(v => v[0] === nx - hx && v[1] === ny - hy), rel = (d - g.dir + 4) % 4;
+    return rel === 0 ? 0 : rel === 1 ? 1 : 2;
+  }
+
+  // Minimal NCHW inference for exported CNN/MLP models (layers written by python/export_model.py).
+  function runLayers(layers, inp) {
+    let x = inp.data, shape = inp.shape;
+    for (const L of layers) {
+      if (L.op === 'conv') {
+        const [C, H, W] = shape, { cout, k, stride: s, pad: p, w, b } = L;
+        const Ho = Math.floor((H + 2 * p - k) / s) + 1, Wo = Math.floor((W + 2 * p - k) / s) + 1;
+        const out = new Float32Array(cout * Ho * Wo);
+        for (let co = 0; co < cout; co++)
+          for (let i = 0; i < Ho; i++)
+            for (let j = 0; j < Wo; j++) {
+              let acc = b[co];
+              for (let ci = 0; ci < C; ci++)
+                for (let ki = 0; ki < k; ki++) {
+                  const yy = i * s + ki - p; if (yy < 0 || yy >= H) continue;
+                  for (let kj = 0; kj < k; kj++) {
+                    const xx = j * s + kj - p; if (xx < 0 || xx >= W) continue;
+                    acc += w[((co * C + ci) * k + ki) * k + kj] * x[(ci * H + yy) * W + xx];
+                  }
+                }
+              out[(co * Ho + i) * Wo + j] = acc;
+            }
+        x = out; shape = [cout, Ho, Wo];
+      } else if (L.op === 'relu') {
+        x = x.map(v => (v > 0 ? v : 0));
+      } else if (L.op === 'flatten') {
+        shape = [x.length];
+      } else if (L.op === 'linear') {
+        const out = new Float32Array(L.out);
+        for (let o = 0; o < L.out; o++) {
+          let acc = L.b[o]; const base = o * L.in;
+          for (let i = 0; i < L.in; i++) acc += L.w[base + i] * x[i];
+          out[o] = acc;
+        }
+        x = out; shape = [L.out];
+      } else if (L.op === 'dueling') {
+        const v = runLayers(L.value, { data: x, shape }).data[0];
+        const a = runLayers(L.adv, { data: x, shape }).data;
+        const m = a.reduce((s2, t) => s2 + t, 0) / a.length;
+        x = a.map(t => v + t - m); shape = [a.length];
+      } else throw new Error('unknown op ' + L.op);
+    }
+    return { data: x, shape };
+  }
+
+  function modelInput(m, g) {
+    if (m.obs === 'grid4') return gridObservation(g);
+    if (m.obs === 'win5') return gridObservationWin(g, false);
+    if (m.obs === 'win6') return gridObservationWin(g, true);
+    const f = m.features === 'extended' ? extendedFeatures(g) : basicFeatures(g);
+    return { data: Float32Array.from(f), shape: [f.length] };
+  }
+
+  // ---- policies ----
+
+  function argmax(a) { let b = 0; for (let i = 1; i < a.length; i++) if (a[i] > a[b]) b = i; return b; }
+
+  const policies = {
+    random: (g, rng) => rng.int(3),
+    // Greedy-toward-food that avoids immediate death: the bar any learned agent has to clear.
+    greedy: (g) => {
+      const [hx, hy] = g.body[0];
+      let best = 0, bestD = Infinity;
+      for (const a of [0, 1, 2]) {
+        const d = a === 0 ? g.dir : a === 1 ? (g.dir + 1) % 4 : (g.dir + 3) % 4;
+        const nx = hx + DIRS[d][0], ny = hy + DIRS[d][1];
+        if (g.blocked(nx, ny)) continue;
+        const dist = g.food ? Math.abs(nx - g.food[0]) + Math.abs(ny - g.food[1]) : 0;
+        if (dist < bestD) { bestD = dist; best = a; }
+      }
+      return best;
+    },
+  };
+
+  function mlpForward(layers, x) {
+    let h = x;
+    for (let l = 0; l < layers.length; l++) {
+      const { w, b } = layers[l];
+      const out = new Array(b.length);
+      for (let i = 0; i < b.length; i++) {
+        let s = b[i]; const row = w[i];
+        for (let j = 0; j < h.length; j++) s += row[j] * h[j];
+        out[i] = l < layers.length - 1 && s < 0 ? 0 : s; // ReLU on hidden layers only
+      }
+      h = out;
+    }
+    return h;
+  }
+
+  function policyFromModel(m) {
+    // q may be a dense array or a sparse {stateIndex: [..]} map; unseen states default to 0s.
+    if (m.type === 'hamiltonian') return (g) => hamiltonianAction(g);
+    if (m.type === 'tabular') return (g) => argmax(m.q[basicStateIndex(g)] || [0, 0, 0]);
+    if (m.type === 'mlp') {
+      const feat = m.features === 'extended' ? extendedFeatures : basicFeatures;
+      return (g) => argmax(mlpForward(m.layers, feat(g)));
+    }
+    if (m.type === 'net') {
+      if (!m.mask) return (g) => argmax(Array.from(runLayers(m.layers, modelInput(m, g)).data));
+      // action masking (tryout 03): never pick a move that kills on the next tick, unless every move does.
+      // basicFeatures()[0..2] are the danger bits for [straight, right, left], the same action order as the net's outputs.
+      return (g) => {
+        const q = Array.from(runLayers(m.layers, modelInput(m, g)).data), d = m.mask === 'trap' ? trapDanger(g) : basicFeatures(g);
+        let ok = [!d[0], !d[1], !d[2]];
+        if (!ok.some(Boolean)) ok = [true, true, true];
+        let best = -1;
+        for (let i = 0; i < 3; i++) if (ok[i] && (best < 0 || q[i] > q[best])) best = i;
+        return best;
+      };
+    }
+    throw new Error('unknown model type ' + m.type);
+  }
+
+  function modelScores(m, g) {
+    if (m.type === 'hamiltonian') return [0, 0, 0];
+    if (m.type === 'tabular') return m.q[basicStateIndex(g)] || [0, 0, 0];
+    if (m.type === 'mlp') return mlpForward(m.layers, (m.features === 'extended' ? extendedFeatures : basicFeatures)(g));
+    return Array.from(runLayers(m.layers, modelInput(m, g)).data);
+  }
+
+  // ---- tabular Q-learning (mirror: python/train_tabular.py) ----
+
+  function trainTabularQ(opts = {}) {
+    const o = Object.assign({
+      width: 12, height: 12, episodes: 20000, alpha: 0.1, gamma: 0.95,
+      epsStart: 1.0, epsEnd: 0.01, epsDecayFrac: 0.5, seed: 1, logEvery: 250,
+    }, opts);
+    const q = Array.from({ length: 2048 }, () => [0, 0, 0]);
+    const visits = new Uint32Array(2048);
+    const rng = new Rng(o.seed ^ 0x9E3779B9);
+    const g = new SnakeGame({ width: o.width, height: o.height, seed: o.seed });
+    const log = []; let buf = []; let totalSteps = 0;
+    for (let ep = 0; ep < o.episodes; ep++) {
+      const eps = Math.max(o.epsEnd, o.epsStart - (o.epsStart - o.epsEnd) * ep / (o.episodes * o.epsDecayFrac));
+      g.reset();
+      let s = basicStateIndex(g);
+      while (!g.done) {
+        const a = rng.nextU32() / 4294967296 < eps ? rng.int(3) : argmax(q[s]);
+        const r = g.step(a);
+        const s2 = r.terminated ? -1 : basicStateIndex(g);
+        // terminated → no bootstrap; truncated → still bootstrap (the state wasn't terminal)
+        const target = r.reward + (r.terminated ? 0 : o.gamma * Math.max(...q[s2]));
+        q[s][a] += o.alpha * (target - q[s][a]);
+        visits[s]++; s = s2; totalSteps++;
+      }
+      buf.push([g.score, g.cause]);
+      if ((ep + 1) % o.logEvery === 0) {
+        const sc = buf.map(b => b[0]);
+        log.push({
+          episode: ep + 1, steps: totalSteps, eps: +eps.toFixed(3),
+          mean: +(sc.reduce((a, b) => a + b, 0) / sc.length).toFixed(3), max: Math.max(...sc),
+          wall: buf.filter(b => b[1] === 'wall').length / buf.length,
+          self: buf.filter(b => b[1] === 'self').length / buf.length,
+          timeout: buf.filter(b => b[1] === 'timeout').length / buf.length,
+        });
+        buf = [];
+      }
+    }
+    return { q, visits, log, opts: o, totalSteps };
+  }
+
+  // Greedy evaluation on held-out seeds. Optionally records one replay every k episodes.
+  function evaluate(policy, { width = 12, height = 12, seeds = [], recordEvery = 0, rngSeed = 7 } = {}) {
+    const rng = new Rng(rngSeed);
+    const res = { scores: [], lengths: [], causes: {}, replays: [] };
+    seeds.forEach((seed, i) => {
+      const g = new SnakeGame({ width, height, seed });
+      const actions = [];
+      while (!g.done) { const a = policy(g, rng); actions.push(a); g.step(a); }
+      res.scores.push(g.score); res.lengths.push(g.steps);
+      res.causes[g.cause] = (res.causes[g.cause] || 0) + 1;
+      if (recordEvery && i % recordEvery === 0) res.replays.push({ seed, width, height, actions: actions.join(''), score: g.score });
+    });
+    const s = [...res.scores].sort((a, b) => a - b);
+    const pct = p => s[Math.min(s.length - 1, Math.floor(p * s.length))];
+    res.summary = {
+      n: s.length, mean: s.reduce((a, b) => a + b, 0) / s.length,
+      median: pct(0.5), p10: pct(0.1), p90: pct(0.9), max: s[s.length - 1],
+      // IQM: mean of the middle 50%, robust to outliers (Agarwal et al. 2021)
+      iqm: (() => { const m = s.slice(Math.floor(s.length * 0.25), Math.ceil(s.length * 0.75)); return m.reduce((a, b) => a + b, 0) / m.length; })(),
+    };
+    return res;
+  }
+
+  const api = { DIRS, ACTIONS, Rng, SnakeGame, basicFeatures, basicStateIndex, extendedFeatures, reachable,
+    gridObservation, gridObservationWin, hamiltonianAction, trapDanger, runLayers, modelInput, modelScores,
+    argmax, policies, mlpForward, policyFromModel, trainTabularQ, evaluate };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.SnakeCore = api;
+})(typeof self !== 'undefined' ? self : this);
+// === SNAKE CORE END ===
+</script>
+
+<!-- Registry of trained agents: plain script tags work from file://, where fetch() of local files is blocked. -->
+<script src="../models/registry.js" onerror="window.SNAKE_REGISTRY = window.SNAKE_REGISTRY || []"></script>
+<script>
+(() => {
+  const S = window.SnakeCore;
+  const $ = id => document.getElementById(id);
+  const cv = $('cv'), ctx = cv.getContext('2d');
+  const models = {};
+  const rng = new S.Rng(Date.now() >>> 0);
+  const OPP = [2, 3, 0, 1];
+
+  let game, cell, paused = false, started = false, best = 0, keyQueue = [], lastActions = [], replay = null, acc = 0, last = performance.now();
+
+  function controllers() {
+    const sel = $('ctrl'), cur = sel.value; sel.innerHTML = '';
+    const grp = label => { const g = document.createElement('optgroup'); g.label = label; sel.appendChild(g); return g; };
+    const add = (g, val, text) => { const o = document.createElement('option'); o.value = val; o.textContent = text; g.appendChild(o); };
+    const reg = typeof regById === 'undefined' ? {} : regById;
+    const b = grp('Built-in'); ['human', 'greedy (heuristic)', 'random'].forEach(n => add(b, n, n));
+    const pre = Object.keys(models).filter(k => reg[k]), cus = Object.keys(models).filter(k => !reg[k]);
+    if (pre.length) { const g = grp('Pretrained'); pre.forEach(k => add(g, 'model: ' + k, reg[k].name)); }
+    if (cus.length) { const g = grp('Custom'); cus.forEach(k => add(g, 'model: ' + k, k)); }
+    if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+  }
+
+  function policy() {
+    const c = $('ctrl').value;
+    if (c.startsWith('greedy')) return S.policies.greedy;
+    if (c === 'random') return S.policies.random;
+    if (c.startsWith('model: ')) return S.policyFromModel(models[c.slice(7)]);
+    return null;
+  }
+
+  function scores(g) {
+    const c = $('ctrl').value;
+    if (!c.startsWith('model: ')) return null;
+    return S.modelScores(models[c.slice(7)], g);
+  }
+
+  function newGame(seed) {
+    const n = +$('size').value;
+    game = new S.SnakeGame({ width: n, height: n, seed: seed ?? +$('seed').value });
+    fit();
+    keyQueue = []; lastActions = []; replay = null; acc = 0;
+    paused = false; $('pause').textContent = 'Pause';
+    started = !!policy(); // humans start on their first key press, agents immediately
+    draw();
+  }
+
+  // Board fills the space left of the side panel (or the full width on narrow screens).
+  function fit() {
+    const w = document.documentElement.clientWidth || 800, h = document.documentElement.clientHeight || 600;
+    const avail = Math.min(w > 860 ? w - 440 : w - 60, h - 140, 640);
+    cell = Math.max(10, Math.floor(avail / game.w));
+    cv.width = cv.height = cell * game.w;
+  }
+  addEventListener('resize', () => { fit(); draw(); });
+
+  // Queue absolute directions, at most 2 per tick, so quick "up, left" corners feel responsive.
+  // Each queued key is validated against the direction the snake will have when it is consumed,
+  // so a fast double-tap can never produce a 180° turn, and no-op keys don't waste a slot.
+  function pressDir(d) {
+    if (game.done || paused) return;
+    const ref = keyQueue.length ? keyQueue[keyQueue.length - 1] : game.dir;
+    if (d === ref || d === OPP[ref] || keyQueue.length >= 2) { started = true; return; }
+    keyQueue.push(d); started = true;
+  }
+
+  function overlay() {
+    const o = $('overlay');
+    let html = '';
+    if (game.done) html = (game.won ? 'YOU WIN' : 'GAME OVER') + `<small>score ${game.score} · ${game.cause}<br>R / Enter to restart</small>`;
+    else if (paused) html = 'PAUSED<small>Space / P to resume</small>';
+    else if (!started) html = 'READY<small>press an arrow key / WASD</small>';
+    o.innerHTML = html;
+    o.classList.toggle('hidden', !html);
+    $('status').textContent = replay ? 'REPLAY' : game.done ? game.cause.toUpperCase() : paused ? 'PAUSE' : started ? 'PLAY' : 'READY';
+  }
+
+  function draw() {
+    const n = game.w;
+    ctx.fillStyle = '#9bbc0f'; ctx.fillRect(0, 0, cv.width, cv.height);
+    ctx.fillStyle = '#93b40f';
+    for (let y = 0; y < n; y++) for (let x = (y % 2); x < n; x += 2) ctx.fillRect(x * cell, y * cell, cell, cell);
+    if (game.food) {
+      ctx.fillStyle = '#0f380f';
+      const [fx, fy] = game.food, p = cell * 0.28;
+      ctx.fillRect(fx * cell + p, fy * cell + p, cell - 2 * p, cell - 2 * p);
+    }
+    game.body.forEach(([x, y], i) => {
+      ctx.fillStyle = i === 0 ? '#0f380f' : '#306230';
+      ctx.fillRect(x * cell + 1, y * cell + 1, cell - 2, cell - 2);
+    });
+    // eye on the head shows heading at a glance
+    const [hx, hy] = game.body[0], [dx, dy] = S.DIRS[game.dir];
+    ctx.fillStyle = '#9bbc0f';
+    ctx.fillRect(hx * cell + cell / 2 + dx * cell / 4 - 2, hy * cell + cell / 2 + dy * cell / 4 - 2, 4, 4);
+
+    $('score').textContent = String(game.score).padStart(4, '0');
+    $('best').textContent = 'HI ' + best;
+    const q = scores(game);
+    const qd = $('qv').children;
+    for (let i = 0; i < 3; i++) {
+      qd[i].textContent = q ? q[i].toFixed(3) : '–';
+      qd[i].className = q && i === S.argmax(q) ? 'best' : '';
+    }
+    $('feat').textContent = 'basic features: ' + S.basicFeatures(game).join('');
+    overlay();
+  }
+
+  function tick() {
+    if (game.done) return;
+    let a;
+    if (replay) {
+      if (replay.i >= replay.actions.length) return;
+      a = +replay.actions[replay.i++];
+    } else {
+      const p = policy();
+      a = p ? p(game, rng) : keyQueue.length ? game.relativeFromAbsolute(keyQueue.shift()) : 0;
+    }
+    lastActions.push(a);
+    game.step(a);
+    if (game.done) best = Math.max(best, game.score);
+  }
+
+  function frame(now) {
+    const dt = Math.min(now - last, 250); last = now; // clamp so a background tab doesn't fast-forward
+    if (!paused && started && !game.done) {
+      const turbo = Math.max(1, +$('turbo').value | 0);
+      if (turbo > 1 && (policy() || replay)) {
+        for (let i = 0; i < turbo && !game.done; i++) tick();
+      } else {
+        acc += dt;
+        const period = 1000 / +$('speed').value;
+        while (acc >= period && !game.done) { acc -= period; tick(); }
+      }
+    }
+    if (game.done && policy() && $('loop').checked && !replay) {
+      $('seed').value = +$('seed').value + 1; newGame();
+    }
+    draw();
+    requestAnimationFrame(frame);
+  }
+
+  const KEYS = { ArrowRight: 0, d: 0, D: 0, ArrowDown: 1, s: 1, S: 1, ArrowLeft: 2, a: 2, A: 2, ArrowUp: 3, w: 3, W: 3 };
+  addEventListener('keydown', e => {
+    if (['TEXTAREA', 'INPUT', 'SELECT', 'BUTTON'].includes(e.target.tagName) && e.key !== 'b' && e.key !== 'B') return;
+    if (e.key in KEYS) { e.preventDefault(); if (!policy() && !replay) pressDir(KEYS[e.key]); }
+    else if ((e.key === 'b' || e.key === 'B') && !['TEXTAREA', 'INPUT', 'SELECT'].includes(e.target.tagName)) { e.preventDefault(); $('watchBest').click(); }
+    else if (e.key === ' ' || e.key === 'p' || e.key === 'P') { e.preventDefault(); togglePause(); }
+    else if (e.key === 'r' || e.key === 'R' || e.key === 'Enter') { e.preventDefault(); newGame(); }
+    else if (e.key === '+' || e.key === '=') setSpeed(+$('speed').value + 2);
+    else if (e.key === '-' || e.key === '_') setSpeed(+$('speed').value - 2);
+  });
+
+  function togglePause() {
+    if (game.done) return;
+    paused = !paused; acc = 0;
+    $('pause').textContent = paused ? 'Resume' : 'Pause';
+  }
+  function setSpeed(v) { $('speed').value = Math.max(2, Math.min(60, v)); $('speedVal').textContent = $('speed').value; }
+
+  // ================= Pretrained agents: registry (models/registry.js) + picker + compare + custom upload =================
+  // Everything here works from file:// (double-click): weights are plain <script> tags loaded lazily, never fetch().
+  const REG = (window.SNAKE_REGISTRY || []).slice();
+  const regById = Object.fromEntries(REG.map(r => [r.id, r]));
+  const FAMILIES = [['tabular', 'Tabular'], ['dqn', 'DQN family'], ['ppo', 'PPO (policy gradient)'], ['planning', 'Planning (not RL)']];
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const f1 = x => (x == null ? '–' : (+x).toFixed(1));
+  const kfmt = n => n == null ? '–' : n >= 1e6 ? (n / 1e6).toFixed(2) + ' M' : n >= 1e3 ? Math.round(n / 1e3) + ' k' : String(n);
+  // Scores on different board sizes are not comparable, so agents are ranked by fill = mean score / foods that fit (cells - 3).
+  const topScore = r => (r.test && r.test.mean != null ? r.test.mean / (r.size * r.size - 3) : -1);
+  // "Best" is per board size, among learned agents only (the planning reference is not a competitor, in-training snapshots are
+  // provisional). "Watch the best agent" uses the standard 12x12 board when a learned agent exists for it.
+  const learned = REG.filter(r => !r.non_rl && !r.provisional), bestBySize = {};
+  learned.forEach(r => { if (!bestBySize[r.size] || topScore(r) > topScore(bestBySize[r.size])) bestBySize[r.size] = r; });
+  const is12 = learned.filter(r => r.size === 12), pool = is12.length ? is12 : (learned.length ? learned : REG);
+  const bestAgent = pool.length ? pool.reduce((a, b) => topScore(b) > topScore(a) ? b : a) : null;
+  const isBest = r => !r.non_rl && !r.provisional && bestBySize[r.size] && bestBySize[r.size].id === r.id;
+  const bestBadge = r => isBest(r) ? ` <span class="badge" title="Highest fill among the learned agents on a ${r.size}×${r.size} board">★ Best ${r.size}×${r.size}</span>` : '';
+  let currentAgent = null, loadToken = 0;
+
+  function say(msg, kind) { // polite live region + a visible note under the picker
+    const el = $('agentMsg'); el.textContent = msg || ''; el.className = 'note ' + (kind || '');
+  }
+
+  function loadWeights(r) { // lazy: a weights script (up to a few MB) is fetched only when the agent is first used
+    return new Promise((resolve, reject) => {
+      const have = () => (window.SNAKE_MODELS || {})[r.id];
+      if (have()) return resolve(have());
+      const s = document.createElement('script');
+      s.src = '../models/' + r.weights;
+      s.onload = () => have() ? resolve(have()) : reject(new Error('the weights file loaded but defined no model'));
+      s.onerror = () => reject(new Error('could not load models/' + r.weights + ' (was the models folder moved?)'));
+      document.head.appendChild(s);
+    });
+  }
+
+  // ---- list ----
+  function compatChips(r) {
+    const c = [];
+    if (r.non_rl) c.push('<span class="chip warn" title="A fixed planning algorithm with full knowledge of the rules: no learning involved">not RL</span>');
+    else c.push(`<span class="chip">${r.obs === 'grid' ? 'board image' : r.obs === 'win5' || r.obs === 'win6' ? 'canvas + tail order' + (r.obs === 'win6' ? ' + reach' : '') : '11 features'}</span>`);
+    if (r.provisional) c.push('<span class="chip warn" title="Best checkpoint so far of a run that is still training; it will be replaced by the final model">in training</span>');
+    if (r.mask === 'trap') c.push('<span class="chip warn" title="Shielded agent: the game also blocks moves into a region the snake could not escape (a flood-fill check), so part of its safety is planning, not learning">+ trap shield</span>');
+    else if (r.mask) c.push('<span class="chip info" title="Picks only moves that do not kill on the next tick; the game applies the same rule">+ action mask</span>');
+    c.push(r.size_locked ? `<span class="chip warn" title="The network input is a fixed-size image, so the board switches to ${r.size}×${r.size}">${r.size}×${r.size} only</span>`
+                         : '<span class="chip ok" title="Works on any board size">any board</span>');
+    return c.join('');
+  }
+  function agentItem(r) {
+    const t = r.test || {};
+    const stats = [`<b>${f1(t.mean)}</b>${t.std != null ? ' ± ' + f1(t.std) : ''}`, `${Math.round(100 * topScore(r))}% fill`, `max ${t.max ?? '–'}`, `${r.size}×${r.size}`,
+      `${kfmt(r.params)} ${r.family === 'tabular' ? 'entries' : 'params'}`, `${r.json_mb ?? '–'} MB`,
+      r.onnx_cpu_latency_us != null ? `${Math.round(r.onnx_cpu_latency_us)} µs` : 'lookup'].join(' · ');
+    return `<button type="button" class="agent" role="option" aria-selected="false" data-id="${esc(r.id)}" id="ag-${esc(r.id)}">` +
+      `<span class="a-top"><b>${esc(r.name)}</b>${bestBadge(r)}</span>` +
+      `<span class="a-desc">${esc(r.description || '')}</span><span class="a-stats" title="test mean ± per-game std over 500 held-out games · fill (mean score as % of the foods that fit) · max · board · size · ONNX CPU latency">${stats}</span>` +
+      `<span class="chips">${compatChips(r)}</span></button>`;
+  }
+  function renderList() {
+    const host = $('agentList');
+    if (!REG.length) { host.innerHTML = '<div class="note warn">No registered agents found (<code>models/registry.js</code> is missing). Use Custom model below, or run <code>python/publish_baselines.py</code>.</div>'; return; }
+    let html = '';
+    for (const [fam, title] of FAMILIES) {
+      const items = REG.filter(r => (r.family || 'dqn') === fam).sort((a, b) => topScore(b) - topScore(a));
+      if (items.length) html += `<div class="fam" role="presentation">${title}</div>` + items.map(agentItem).join('');
+    }
+    host.innerHTML = html;
+    host.querySelectorAll('.agent').forEach(b => { b.onclick = () => selectAgent(b.dataset.id); });
+  }
+  $('agentList').addEventListener('keydown', e => { // arrow keys move through the list, Enter / Space select
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    const items = [...$('agentList').querySelectorAll('.agent')], i = items.indexOf(document.activeElement);
+    if (!items.length) return;
+    e.preventDefault();
+    items[Math.max(0, Math.min(items.length - 1, i + (e.key === 'ArrowDown' ? 1 : -1)))].focus();
+  });
+
+  // ---- info card: stats, death causes, mini learning curve, links ----
+  function causesBar(t) {
+    const cs = t.causes || {}, n = Object.values(cs).reduce((a, b) => a + b, 0) || 1;
+    const col = { wall: '#c27c0e', self: '#b3261e', timeout: '#6b7280', win: '#306230' };
+    const segs = Object.entries(cs).map(([k, v]) => `<span style="width:${(100 * v / n).toFixed(1)}%;background:${col[k] || '#888'}" title="${k}: ${v} of ${n}"></span>`).join('');
+    const leg = Object.entries(cs).map(([k, v]) => `<span><i style="background:${col[k] || '#888'}"></i>${k} ${v}</span>`).join('');
+    return `<div class="bar" role="img" aria-label="causes of death">${segs}</div><div class="legend">${leg}</div>`;
+  }
+  function spark(curve) {
+    if (!curve || curve.length < 2) return '<span class="mut">no learning curve recorded</span>';
+    const W = 260, H = 70, P = 4, xs = curve.map(c => c[0]), ys = curve.map(c => c[1]);
+    const x1 = Math.max(...xs), y1 = Math.max(24, ...ys), X = v => P + v / x1 * (W - 2 * P), Y = v => H - P - v / y1 * (H - 2 * P);
+    const pts = curve.map(c => `${X(c[0]).toFixed(1)},${Y(c[1]).toFixed(1)}`).join(' ');
+    return `<svg viewBox="0 0 ${W} ${H}" class="spark" role="img" aria-label="learning curve: greedy test mean against training steps">` +
+      `<line x1="${P}" x2="${W - P}" y1="${Y(20).toFixed(1)}" y2="${Y(20).toFixed(1)}" stroke="#b3261e" stroke-dasharray="3 3" stroke-width="1"/>` +
+      `<polyline fill="none" stroke="#9bbc0f" stroke-width="2" points="${pts}"/></svg>` +
+      `<div class="legend"><span>0 → ${kfmt(x1)} steps</span><span>peak ${f1(Math.max(...ys))}</span><span style="color:#e38b84">- - tabular ≈ 20</span></div>`;
+  }
+  function agentCard(r, jsMs) {
+    const t = r.test || {}, tr = r.train, ss = r.seed_stats, rows = [];
+    const row = (k, v) => rows.push(`<tr><td>${k}</td><td>${v}</td></tr>`);
+    row('Test score', `<b>${f1(t.mean)}</b>${t.std != null ? ' ± ' + f1(t.std) : ''} <span class="mut">(mean ± sd over ${t.n || 500} held-out games)</span>`);
+    row('Median · p90 · max', `${t.median ?? '–'} · ${t.p90 ?? '–'} · <b>${t.max ?? '–'}</b>`);
+    if (r.by_size) row('Win rate by board', r.by_size.map(b => `${b.size}×${b.size}: <b>${(100 * b.win_rate).toFixed(0)}%</b>${b.mean != null ? ' <span class="mut">(mean ' + f1(b.mean) + ')</span>' : ''}`).join(' · '));
+    if (ss) row('Across training seeds', `${f1(ss.mean)} ± ${f1(ss.std)} <span class="mut">(n = ${ss.n}, ${esc(ss.scope)})</span>`);
+    row('Board · input', `${r.size}×${r.size}${r.size_locked ? ' (fixed)' : ' (any size)'} · ${esc(r.requires || '')}${r.mask === 'trap' ? ' · action mask + trap shield (flood-fill lookahead) applied' : r.mask ? ' · action mask applied' : ''}`);
+    row('Size', `${(r.params || 0).toLocaleString()} ${r.family === 'tabular' ? 'table entries' : 'parameters'} · ${r.json_mb} MB json${r.onnx_mb ? ' · ' + r.onnx_mb + ' MB onnx' : ''}`);
+    row('Inference', (r.onnx_cpu_latency_us != null ? `${Math.round(r.onnx_cpu_latency_us)} µs ONNX Runtime (CPU, 1 thread)` : 'table lookup') +
+      (jsMs != null ? ` · ${jsMs < 0.05 ? '< 0.05' : jsMs.toFixed(2)} ms in this page` : ''));
+    if (tr) row('Training', `${(tr.env_steps / 1e6).toFixed(1)} M steps · ${tr.seconds >= 3600 ? (tr.seconds / 3600).toFixed(1) + ' h' : Math.round(tr.seconds / 60) + ' min'} · ${(tr.steps_per_s || 0).toLocaleString()} steps/s${tr.vram_mb ? ' · ' + tr.vram_mb + ' MB VRAM' : ''}`);
+    $('agentCard').innerHTML = (r.provisional ? '<div class="note warn">⏳ Provisional: the best checkpoint so far of a run that is still training. The final model will replace it.</div>' : '') + `<h3>${esc(r.name)}${bestBadge(r)}</h3>` +
+      `<table class="kv">${rows.join('')}</table><h4>How it dies (500 test games)</h4>${causesBar(t)}<h4>Learning curve (greedy test mean)</h4>${spark(r.curve)}` +
+      `<div class="links">${r.notes ? `<a href="${esc(r.notes)}" target="_blank" rel="noopener">Read the write-up (tryout ${r.tryout ?? ''})</a>` : ''}<button type="button" id="toCompare">Compare with another agent</button></div>`;
+    if (r.replays && r.replays.length) { const h = document.createElement('button'); h.type = 'button'; h.id = 'toReplay'; h.textContent = '▶ Replay a win'; $('toCompare').before(h); h.onclick = () => playReplay(r.replays[0]); }
+    const b = $('toCompare'); if (b) b.onclick = () => { $('cmpA').value = r.id; document.getElementById('comparePanel').scrollIntoView({ behavior: 'smooth', block: 'start' }); $('cmpB').focus(); };
+  }
+
+  // ---- select ----
+  function markSelected(id) {
+    $('agentList').querySelectorAll('.agent').forEach(b => { const on = b.dataset.id === id; b.classList.toggle('sel', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+    $('now').textContent = id && regById[id] ? 'Agent: ' + regById[id].name : '';
+  }
+  async function selectAgent(id, opts = {}) {
+    const r = regById[id]; if (!r) return;
+    const token = ++loadToken;
+    markSelected(id); say('Loading ' + r.name + '…');
+    try { models[id] = await loadWeights(r); }
+    catch (err) { if (token === loadToken) { say(err.message, 'bad'); currentAgent = null; markSelected(''); } return; }
+    if (token !== loadToken) return; // a newer click won
+    currentAgent = r;
+    controllers();
+    const msgs = [];
+    if (+$('size').value !== r.size) { msgs.push(`Board set to ${r.size}×${r.size}${r.size_locked ? ' (this network only plays that size)' : ' (the size it was trained on)'}.`); $('size').value = String(r.size); }
+    $('ctrl').value = 'model: ' + id;
+    if (opts.speed) setSpeedPreset(opts.speed);
+    newGame();
+    let jsMs = null;
+    try { const p = S.policyFromModel(models[id]), g = new S.SnakeGame({ width: r.size, height: r.size, seed: 1 }), t0 = performance.now(); for (let i = 0; i < 20; i++) p(g); jsMs = (performance.now() - t0) / 20; } catch (e) { /* optional */ }
+    agentCard(r, jsMs);
+    if (r.mask === 'trap') msgs.push('Shielded agent: besides never turning into an instant death, it never enters a region it could not escape (a flood-fill lookahead the game applies).');
+    else if (r.mask) msgs.push('This agent applies an action mask (it never turns into an instant death).');
+    say(msgs.join(' '), '');
+    $('agentList').querySelector(`[data-id="${CSS.escape(id)}"]`)?.scrollIntoView({ block: 'nearest' });
+  }
+  function playReplay(rp) { // a recorded winning game (seed + actions): exact re-simulation by the engine
+    $('size').value = String(rp.width); $('seed').value = String(rp.seed);
+    newGame(rp.seed); replay = { actions: String(rp.actions), i: 0 }; started = true;
+    say(`Replaying a recorded game: seed ${rp.seed}, ${rp.width}×${rp.width}, final score ${rp.score}${rp.cause ? ' (' + rp.cause + ')' : ''}.`);
+  }
+  function clearAgent() { currentAgent = null; markSelected(''); $('agentCard').innerHTML = '<div class="mut">Pick a pretrained agent above. Its best weights load automatically and the board size is set for you.</div>'; }
+
+  // ---- speed presets and Watch ----
+  const PRESETS = { slow: [5, 1], normal: [12, 1], fast: [30, 1], turbo: [60, 25] };
+  function setSpeedPreset(name) {
+    const [sp, tb] = PRESETS[name]; setSpeed(sp); $('turbo').value = String(tb);
+    document.querySelectorAll('#presets button').forEach(b => b.setAttribute('aria-pressed', b.dataset.p === name ? 'true' : 'false'));
+  }
+  document.querySelectorAll('#presets button').forEach(b => { b.onclick = () => setSpeedPreset(b.dataset.p); });
+  $('watchBest').onclick = () => { if (bestAgent) selectAgent(bestAgent.id, { speed: 'normal' }); else say('No registered agents to watch.', 'bad'); };
+  if (!bestAgent) $('watchBest').disabled = true;
+
+  // ---- compare: two agents, same seed, side by side ----
+  const cmp = { a: null, b: null, ga: null, gb: null, seed: 100000, run: false, acc: 0, tally: { a: 0, b: 0, tie: 0, n: 0, sa: 0, sb: 0 }, last: performance.now() };
+  function cmpOptions() {
+    const opt = (v, t) => `<option value="${esc(v)}">${esc(t)}</option>`;
+    const reg = REG.slice().sort((a, b) => topScore(b) - topScore(a)).map(r => opt(r.id, `${r.name} (${f1(r.test?.mean)})`)).join('');
+    const custom = Object.keys(models).filter(k => !regById[k]).map(k => opt('custom:' + k, 'custom: ' + k)).join('');
+    const html = `<optgroup label="Pretrained">${reg}</optgroup><optgroup label="Built-in">${opt('greedy', 'greedy heuristic')}${opt('random', 'random')}</optgroup>${custom ? `<optgroup label="Custom">${custom}</optgroup>` : ''}`;
+    const a = $('cmpA').value, b = $('cmpB').value;
+    $('cmpA').innerHTML = html; $('cmpB').innerHTML = html;
+    $('cmpA').value = a || (REG[0] ? bestAgent.id : 'greedy');
+    $('cmpB').value = b || 'greedy';
+  }
+  async function cmpResolve(v) { // -> {name, size (or null = any), policy}
+    if (v === 'greedy') return { name: 'greedy heuristic', size: null, policy: S.policies.greedy };
+    if (v === 'random') return { name: 'random', size: null, policy: S.policies.random };
+    if (v.startsWith('custom:')) { const m = models[v.slice(7)]; return { name: v.slice(7), size: m.size || null, policy: S.policyFromModel(m) }; }
+    const r = regById[v]; models[v] = await loadWeights(r);
+    return { name: r.name, size: r.size_locked ? r.size : null, pref: r.size, policy: S.policyFromModel(models[v]) };
+  }
+  function drawBoard(cvs, g) {
+    const n = g.w, c = Math.max(8, Math.floor(190 / n)); cvs.width = cvs.height = c * n;
+    const x = cvs.getContext('2d'); x.fillStyle = '#9bbc0f'; x.fillRect(0, 0, cvs.width, cvs.height);
+    if (g.food) { x.fillStyle = '#0f380f'; x.fillRect(g.food[0] * c + c * .25, g.food[1] * c + c * .25, c * .5, c * .5); }
+    g.body.forEach(([bx, by], i) => { x.fillStyle = i ? '#306230' : '#0f380f'; x.fillRect(bx * c + 1, by * c + 1, c - 2, c - 2); });
+  }
+  async function cmpStart(newSeed) {
+    $('cmpMsg').textContent = '';
+    try {
+      const [A, B] = await Promise.all([cmpResolve($('cmpA').value), cmpResolve($('cmpB').value)]);
+      let size = A.size || B.size || A.pref || B.pref || 12;
+      if (A.size && B.size && A.size !== B.size) { $('cmpMsg').textContent = `These two need different boards (${A.size}×${A.size} and ${B.size}×${B.size}); pick agents with a common size.`; cmp.run = false; return; }
+      cmp.a = A; cmp.b = B;
+      if (newSeed != null) cmp.seed = newSeed; else cmp.seed = +$('cmpSeed').value;
+      $('cmpSeed').value = cmp.seed;
+      cmp.ga = new S.SnakeGame({ width: size, height: size, seed: cmp.seed });
+      cmp.gb = new S.SnakeGame({ width: size, height: size, seed: cmp.seed });
+      cmp.ra = new S.Rng(7); cmp.rb = new S.Rng(7); cmp.run = true; cmp.acc = 0;
+      $('cmpCapA').textContent = A.name; $('cmpCapB').textContent = B.name; cmpDraw();
+    } catch (e) { $('cmpMsg').textContent = 'Could not start: ' + e.message; cmp.run = false; }
+  }
+  function cmpDraw() {
+    if (!cmp.ga) return;
+    drawBoard($('cmpCa'), cmp.ga); drawBoard($('cmpCb'), cmp.gb);
+    $('cmpScA').textContent = cmp.ga.score + (cmp.ga.done ? ' · ' + cmp.ga.cause : ''); $('cmpScB').textContent = cmp.gb.score + (cmp.gb.done ? ' · ' + cmp.gb.cause : '');
+    const t = cmp.tally;
+    $('cmpTally').textContent = t.n ? `${t.n} race${t.n > 1 ? 's' : ''}: ${cmp.a.name} wins ${t.a}, ${cmp.b.name} wins ${t.b}, ties ${t.tie} · mean ${(t.sa / t.n).toFixed(1)} vs ${(t.sb / t.n).toFixed(1)}` : '';
+  }
+  function cmpTick(turbo) {
+    for (let i = 0; i < turbo && cmp.run; i++) {
+      if (!cmp.ga.done) cmp.ga.step(cmp.a.policy(cmp.ga, cmp.ra));
+      if (!cmp.gb.done) cmp.gb.step(cmp.b.policy(cmp.gb, cmp.rb));
+      if (cmp.ga.done && cmp.gb.done) {
+        const t = cmp.tally; t.n++; t.sa += cmp.ga.score; t.sb += cmp.gb.score;
+        if (cmp.ga.score > cmp.gb.score) t.a++; else if (cmp.gb.score > cmp.ga.score) t.b++; else t.tie++;
+        cmp.run = false; cmpDraw();
+        if ($('cmpLoop').checked) setTimeout(() => cmpStart(cmp.seed + 1), 900);
+        return;
+      }
+    }
+  }
+  function cmpFrame(now) {
+    const dt = Math.min(now - cmp.last, 250); cmp.last = now;
+    if (cmp.run && !document.hidden) {
+      const turbo = Math.max(1, +$('turbo').value | 0);
+      if (turbo > 1) cmpTick(turbo); else { cmp.acc += dt; const period = 1000 / +$('speed').value; while (cmp.acc >= period && cmp.run) { cmp.acc -= period; cmpTick(1); } }
+      cmpDraw();
+    }
+    requestAnimationFrame(cmpFrame);
+  }
+  $('cmpGo').onclick = () => { cmp.tally = { a: 0, b: 0, tie: 0, n: 0, sa: 0, sb: 0 }; cmpStart(); };
+  $('cmpA').onchange = $('cmpB').onchange = () => { cmp.tally = { a: 0, b: 0, tie: 0, n: 0, sa: 0, sb: 0 }; };
+  cmpOptions(); requestAnimationFrame(cmpFrame);
+
+  // ---- custom model: validation with helpful errors ----
+  function checkShapes(layers, shape) { // propagate [c,h,w] / [n] through conv / flatten / linear / dueling; throws on a mismatch
+    let sh = shape.slice();
+    const prod = a => a.reduce((x, y) => x * y, 1);
+    for (const L of layers) {
+      if (L.op === 'conv') {
+        if (sh.length !== 3 || sh[0] !== L.cin) throw new Error(`a conv layer expects ${L.cin} input channels but gets ${sh.length === 3 ? sh[0] : 'a flat vector'}`);
+        sh = [L.cout, Math.floor((sh[1] + 2 * L.pad - L.k) / L.stride) + 1, Math.floor((sh[2] + 2 * L.pad - L.k) / L.stride) + 1];
+        if (sh[1] < 1 || sh[2] < 1) throw new Error('the board is too small for this network');
+      } else if (L.op === 'flatten') sh = [prod(sh)];
+      else if (L.op === 'linear') {
+        if (prod(sh) !== L.in) throw new Error(`a dense layer expects ${L.in} inputs but gets ${prod(sh)}`);
+        sh = [L.out];
+      } else if (L.op === 'dueling') { checkShapes(L.value, sh); checkShapes(L.adv, sh); sh = [3]; }
+    }
+    return sh;
+  }
+  function validateModel(m) {
+    const bad = msg => ({ ok: false, msg });
+    if (!m || typeof m !== 'object' || Array.isArray(m)) return bad('The file is JSON but not a model object. Export one with python/export_model.py (it writes best.json).');
+    if (!['tabular', 'mlp', 'net', 'hamiltonian'].includes(m.type)) return bad(`Unknown model type “${m.type}”. Expected "tabular", "mlp", "net" or "hamiltonian" (as written by this project's export scripts).`);
+    if (m.type === 'tabular' && (!m.q || typeof m.q !== 'object')) return bad('A tabular model needs a "q" table (state index → 3 action values).');
+    if (m.type !== 'tabular' && m.type !== 'hamiltonian' && !Array.isArray(m.layers)) return bad(`A "${m.type}" model needs a "layers" list.`);
+    if (m.type === 'net' && !m.obs && !m.features) return bad('A "net" model must say what it reads: "obs": "grid4" / "win5" / "win6" (board images) or "features": "basic".');
+    const size = m.size || (m.type === 'net' && m.obs === 'grid4' ? null : +$('size').value);
+    if (m.type === 'net' && m.obs === 'grid4' && !size) return bad('This board-image network does not say which board size it was trained for ("size" is missing), so it cannot be run safely.');
+    try { // follow the tensor shapes layer by layer: runLayers itself does not check them
+      const inShape = m.type === 'net' && m.obs === 'grid4' ? [4, size + 2, size + 2] : m.type === 'net' && (m.obs === 'win5' || m.obs === 'win6') ? [m.obs === 'win6' ? 6 : 5, 14, 14]
+      : (m.type === 'hamiltonian' ? null : m.features === 'extended' ? null : [11]);
+      if (inShape && m.layers) {
+        const out = checkShapes(m.layers, inShape);
+        if (out.length !== 1 || out[0] !== 3) return bad(`The network ends with ${out.join('×')} outputs, but the game needs exactly 3 action values.`);
+      }
+    } catch (err) {
+      return bad(`This model does not fit a ${size}×${size} board: ${err.message}.` + (m.size && m.size !== +$('size').value ? '' : ' Check that the file was trained for this board size and observation type.'));
+    }
+    try { // run one decision on a fresh board of the right size: catches anything else
+      const p = S.policyFromModel(m), g = new S.SnakeGame({ width: size, height: size, seed: 1 }), a = p(g, new S.Rng(1));
+      if (![0, 1, 2].includes(a)) return bad('The model ran but did not return an action 0, 1 or 2.');
+    } catch (err) { return bad(`The model does not run on a ${size}×${size} board: ${err.message}. Its layer sizes probably do not match the input (wrong board size or wrong observation type).`); }
+    return { ok: true, size: m.size || null };
+  }
+  async function loadCustomFile(f) {
+    const out = $('modelOut'); out.className = 'note';
+    if (!f) return;
+    if (/\.(pt|pth|onnx|npz|h5)$/i.test(f.name)) { out.textContent = `“${f.name}” is a ${f.name.split('.').pop()} file. The game needs the .json export (python/export_model.py → best.json), not a PyTorch/ONNX file.`; out.classList.add('bad'); return; }
+    if (f.size > 30e6) { out.textContent = 'That file is larger than 30 MB, which is far beyond any model here. Is it the right file?'; out.classList.add('bad'); return; }
+    let m;
+    try { m = JSON.parse(await f.text()); } catch (err) { out.textContent = `Not valid JSON (${err.message.slice(0, 80)}). Choose the best.json written by the export step.`; out.classList.add('bad'); return; }
+    const v = validateModel(m);
+    if (!v.ok) { out.textContent = v.msg; out.classList.add('bad'); return; }
+    const name = f.name.replace(/\.json$/i, '');
+    models[name] = m; controllers(); cmpOptions();
+    const msgs = [`Loaded “${name}” (${m.type}${m.obs ? ', ' + m.obs : m.features ? ', ' + m.features + ' features' : ''}${m.mask ? ', action mask' : ''}).`];
+    if (v.size && +$('size').value !== v.size) { $('size').value = String(v.size); msgs.push(`Board switched to ${v.size}×${v.size}, the size it was trained on.`); }
+    clearAgent(); $('ctrl').value = 'model: ' + name; newGame();
+    out.textContent = msgs.join(' '); out.classList.add('good');
+  }
+  $('file').onchange = e => loadCustomFile(e.target.files[0]);
+  const dz = $('dropzone');
+  ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('over'); }));
+  dz.addEventListener('drop', e => loadCustomFile(e.dataTransfer.files[0]));
+
+  renderList(); clearAgent(); setSpeedPreset('normal');
+
+  // After a mouse click drop focus, so Space pauses the game instead of re-clicking the button; keyboard users keep focus.
+  for (const el of document.querySelectorAll('button')) el.addEventListener('mouseup', () => setTimeout(() => el.blur(), 0));
+  $('restart').onclick = () => newGame();
+  $('pause').onclick = togglePause;
+  $('speed').oninput = () => setSpeed(+$('speed').value);
+  $('size').onchange = () => {
+    if (currentAgent && currentAgent.size_locked && +$('size').value !== currentAgent.size) {
+      $('size').value = String(currentAgent.size);
+      say(`${currentAgent.name} only plays ${currentAgent.size}×${currentAgent.size} (its input is a fixed-size board image), so the board stays at ${currentAgent.size}×${currentAgent.size}.`, 'warn');
+    }
+    newGame();
+  };
+  $('ctrl').onchange = () => {
+    if (currentAgent && $('ctrl').value !== 'model: ' + currentAgent.id) { clearAgent(); say(''); }
+    newGame();
+  };
+  $('seed').onchange = () => newGame();
+
+  $('bench').onclick = () => {
+    const p = policy();
+    if (!p) { $('benchOut').textContent = 'Pick a non-human controller.'; return; }
+    const n = +$('neps').value, s0 = +$('seed0').value, size = +$('size').value;
+    const seeds = Array.from({ length: n }, (_, i) => s0 + i);
+    const t0 = performance.now();
+    const r = S.evaluate(p, { width: size, height: size, seeds });
+    const dt = (performance.now() - t0) / 1000;
+    const steps = r.lengths.reduce((a, b) => a + b, 0);
+    const s = r.summary;
+    $('benchOut').textContent =
+      `${$('ctrl').value} on ${size}x${size}, ${n} episodes\n` +
+      `mean ${s.mean.toFixed(2)}  IQM ${s.iqm.toFixed(2)}  median ${s.median}  p10 ${s.p10}  p90 ${s.p90}  max ${s.max}\n` +
+      `ends: ${JSON.stringify(r.causes)}\n` +
+      `${steps} steps in ${dt.toFixed(2)} s → ${(steps / dt / 1000).toFixed(0)}k steps/s (incl. policy)`;
+  };
+
+  $('trainQ').onclick = () => {
+    $('modelOut').textContent = 'training…';
+    setTimeout(() => {
+      const size = +$('size').value, t0 = performance.now();
+      const r = S.trainTabularQ({ width: size, height: size, episodes: 20000 });
+      models['browser_tabular_q'] = { type: 'tabular', features: 'basic', q: r.q };
+      controllers(); cmpOptions(); clearAgent(); $('ctrl').value = 'model: browser_tabular_q'; newGame();
+      const tail = r.log.slice(-4).map(l => `ep ${l.episode}: mean ${l.mean} (eps ${l.eps})`).join('\n');
+      $('modelOut').textContent = `trained 20k episodes, ${r.totalSteps} steps in ${((performance.now() - t0) / 1000).toFixed(1)} s\n${tail}`;
+    }, 20);
+  };
+
+  $('replay').onclick = () => {
+    try {
+      const r = JSON.parse($('replayIn').value);
+      $('size').value = r.width; $('seed').value = r.seed;
+      newGame(r.seed);
+      replay = { actions: String(r.actions), i: 0 }; started = true;
+    } catch (err) { $('replayIn').value = 'invalid replay JSON: ' + err.message; }
+  };
+  $('copyLast').onclick = () => {
+    const txt = JSON.stringify({ seed: +$('seed').value, width: game.w, height: game.h, actions: lastActions.join('') });
+    $('replayIn').value = txt;
+    navigator.clipboard?.writeText(txt).catch(() => {});
+  };
+
+  // Test hook: lets automated checks drive and inspect the live game.
+  window.SnakeApp = { get game() { return game; }, get queue() { return keyQueue; }, get paused() { return paused; },
+                      newGame, tick, pressDir, togglePause };
+
+  controllers();
+  newGame();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use this course or the code, please cite it as below."
+title: "Snake RL from scratch: reinforcement-learning theory, hands-on code and a browser demo"
+type: software
+authors:
+  - given-names: "Kartik"
+repository-code: "https://github.com/OWNER/snake-rl-from-scratch"
+license: MIT
+abstract: >-
+  A free reinforcement-learning course built on one small game: tabular Q-learning, DQN and its upgrades,
+  and PPO, with interactive notes, bit-identical JavaScript and Python engines, GPU-batched environments,
+  multi-seed ablations and trained agents that play in the browser.
+keywords: [reinforcement learning, DQN, PPO, Snake, education, PyTorch]

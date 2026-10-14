@@ -1,0 +1,10 @@
+# torch is NOT listed: run.ps1 setup installs the CUDA wheel (cu130 or cu126) from the PyTorch index; see setup_cuda_windows.md.
+numpy
+gymnasium>=1.0
+matplotlib
+pytest
+onnx
+onnxruntime
+onnxscript
+pillow
+psutil

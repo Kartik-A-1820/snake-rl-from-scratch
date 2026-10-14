@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Snake RL from scratch: theory, hands-on, demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A free reinforcement-learning course on one tiny game: tabular Q-learning, DQN and its upgrades, PPO. Interactive notes, runnable code, trained agents you can watch in the browser.">
+<style>
+  :root { --lcd: #9bbc0f; --ink: #0f380f; --mid: #306230; --bg: #1d1f1b; --fg: #e8eadf; --mut: #9aa08f; --card: #26291f; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.55 system-ui, -apple-system, Segoe UI, sans-serif; background: var(--bg); color: var(--fg); }
+  main { max-width: 900px; margin: 0 auto; padding: 32px 20px 64px; }
+  h1 { font-size: 30px; margin: 0 0 6px; } h2 { font-size: 18px; margin: 32px 0 10px; color: var(--lcd); }
+  .lead { color: var(--mut); font-size: 17px; margin: 0 0 22px; }
+  a { color: var(--lcd); }
+  .hero { display: flex; gap: 12px; flex-wrap: wrap; margin: 18px 0 8px; }
+  .btn { display: inline-block; background: var(--lcd); color: var(--ink); font-weight: 700; padding: 10px 16px; border-radius: 8px; text-decoration: none; }
+  .btn.alt { background: var(--card); color: var(--fg); border: 1px solid #3a3f30; }
+  table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 8px; overflow: hidden; font-size: 14.5px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid #343829; vertical-align: top; } th { color: var(--mut); font-weight: 600; font-size: 12.5px; text-transform: uppercase; letter-spacing: .05em; }
+  tr:last-child td { border-bottom: 0; } .mut { color: var(--mut); }
+  .gif { max-width: 100%; border-radius: 10px; margin-top: 18px; border: 1px solid #3a3f30; }
+  footer { margin-top: 40px; color: var(--mut); font-size: 13px; }
+  :focus-visible { outline: 2px solid var(--lcd); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Snake RL from scratch</h1>
+  <p class="lead">A free reinforcement-learning course built on one tiny game. Read the theory, run the code, then watch what you trained play in your browser.</p>
+  <div class="hero">
+    <a class="btn" href="game/index.html">▶ Play and watch the agents</a>
+    <a class="btn alt" href="notes/01_tabular_q_learning.html">Start with note 01</a>
+    <a class="btn alt" href="https://github.com/" id="repo" hidden>Source on GitHub</a>
+  </div>
+  <img class="gif" src="docs/agents.gif" alt="Trained agents playing Snake side by side" onerror="this.remove()">
+
+  <h2>The curriculum</h2>
+  <table>
+    <tr><th>#</th><th>Topic</th><th>Read</th><th>Download</th></tr>
+    <tr><td>01</td><td>Tabular Q-learning: MDPs, Bellman backups, ε-greedy, why the 11-feature state hits a ceiling</td><td><a href="notes/01_tabular_q_learning.html">interactive note</a></td><td><a href="notes/01_tabular_q_learning.docx">.docx</a></td></tr>
+    <tr><td>02</td><td>Deep Q-networks: function approximation, replay, target networks, Double DQN, GPU-batched environments, and a failed run diagnosed</td><td><a href="notes/02_dqn.html">interactive note</a></td><td><a href="notes/02_dqn.docx">.docx</a></td></tr>
+    <tr><td>03</td><td>Upgrading DQN: dueling, prioritized replay, action masking, with a multi-seed ablation</td><td><a href="notes/03_dqn_upgrades.html">interactive note</a></td><td><a href="notes/03_dqn_upgrades.docx">.docx</a></td></tr>
+    <tr><td>04</td><td>Policy gradients and PPO: REINFORCE, baselines, GAE, clipping, on- vs off-policy, throughput on a small GPU</td><td><a href="notes/04_ppo.html">interactive note</a></td><td><a href="notes/04_ppo.docx">.docx</a></td></tr>
+    <tr><td>all</td><td>The whole course as one book</td><td class="mut">—</td><td><a href="notes/snake_rl_master.docx">snake_rl_master.docx</a></td></tr>
+  </table>
+
+  <h2>Try the agents</h2>
+  <p>The game page lists every trained agent, grouped by algorithm family, with its test score, size and speed. Pick one to watch it, or race two on the same seed. Everything runs in your browser, with no server and no install.</p>
+  <p><a class="btn" href="game/index.html">Open the game</a></p>
+
+  <footer>Code, notes and trained models: see the repository README for the quickstart, the results leaderboard and the licence.</footer>
+</main>
+<script>
+  // Fill the "source" link when hosted on GitHub Pages (https://<user>.github.io/<repo>/)
+  (function () {
+    var m = location.hostname.match(/^([^.]+)\.github\.io$/), parts = location.pathname.split('/').filter(Boolean);
+    if (m && parts.length) { var a = document.getElementById('repo'); a.href = 'https://github.com/' + m[1] + '/' + parts[0]; a.hidden = false; }
+  })();
+</script>
+</body>
+</html>
