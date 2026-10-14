@@ -1,0 +1,97 @@
+{
+ "name": "PPO win challenge, 6x6",
+ "tryout": 5,
+ "family": "ppo",
+ "description": "PPO with an action mask and a reachable-area channel on the size-agnostic canvas, trained to fill a 6x6 board.",
+ "obs": "win6",
+ "size": 6,
+ "size_locked": false,
+ "mask": true,
+ "components": [
+  "mask"
+ ],
+ "params": 583012,
+ "fp32_mb": 2.332,
+ "onnx_mb": 1.296,
+ "onnx_cpu_latency_us": 79.8,
+ "onnx_max_abs_err": 8.58306884765625e-06,
+ "epoch": 12,
+ "select_score": 32.220001220703125,
+ "val_mean": 32.220001220703125,
+ "test": {
+  "n": 500,
+  "mean": 32.4,
+  "std": 3.7196774053672987,
+  "median": 33.0,
+  "p10": 33.0,
+  "p90": 33.0,
+  "max": 33,
+  "wins": 487,
+  "causes": {
+   "self": 8,
+   "timeout": 5,
+   "win": 487
+  }
+ },
+ "requires": "14x14 canvas: tail order, head, food, wall, length, reachable area",
+ "replays": [
+  {
+   "seed": 100000,
+   "width": 6,
+   "height": 6,
+   "actions": "200101000100001000100001000100110200200020022100202000200002000022000110022011002200002000020000220001100020020000200002000022000110002002000022000110002002000022000110002002000022000110002002000022000110002002",
+   "score": 33,
+   "cause": "win"
+  },
+  {
+   "seed": 100001,
+   "width": 6,
+   "height": 6,
+   "actions": "002002000020000220100020022000010001102100110001000220000200002000020000200002000022000110022001100010001100200110002200002000020000220001100020022010011022002000020000220001100020022010011022002000020000220001100020022010011022002000020000220",
+   "score": 33,
+   "cause": "win"
+  },
+  {
+   "seed": 100002,
+   "width": 6,
+   "height": 6,
+   "actions": "00200200002000020000220000100010000100001000010000100001000100110200200020000220100220011000220000200002000022000110002002000022000110002002000022000110002002000022000110002002000022000110002002000022000110002002000022000",
+   "score": 33,
+   "cause": "win"
+  }
+ ],
+ "train": {
+  "run": "t05_6x6_win6_s0",
+  "env_steps": 6012928,
+  "updates": 11744,
+  "seconds": 3449,
+  "steps_per_s": 1824,
+  "vram_mb": 262,
+  "device": "cuda:0 NVIDIA GeForce GTX 1650 Ti, 4.0 GiB, sm_75, torch 2.14.1+cu130 (CUDA 13.0)",
+  "batch": 16384,
+  "n_step": 1,
+  "dueling": false,
+  "double": true,
+  "algo": "04_ppo"
+ },
+ "curve": [
+  [
+   2015232,
+   30.6
+  ],
+  [
+   4014080,
+   31.48
+  ],
+  [
+   6012928,
+   32.4
+  ]
+ ],
+ "notes": "../notes/05_win_challenge.html",
+ "source_ckpt": "t05_6x6_win6_s0_best.pt",
+ "provisional": false,
+ "id": "05_ppo_win_6x6",
+ "date": "2026-10-13T20:51:09",
+ "json_mb": 3.399
+}

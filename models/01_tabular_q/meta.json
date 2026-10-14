@@ -1,0 +1,32 @@
+{
+ "name": "Tabular Q-learning (11 features)",
+ "tryout": 1,
+ "family": "tabular",
+ "description": "Q-table over the 2048 states of 11 binary features (danger ahead/right/left, heading, food direction). No body information beyond the three adjacent cells.",
+ "obs": "basic",
+ "size": 12,
+ "size_locked": false,
+ "params": 768,
+ "onnx_cpu_latency_us": null,
+ "select_score": 20.935,
+ "test": {
+  "n": 500,
+  "mean": 20.078,
+  "std": 6.53788314364826,
+  "median": 20,
+  "p10": 12,
+  "p90": 28,
+  "max": 39,
+  "wins": 0,
+  "causes": {
+   "self": 454,
+   "wall": 46
+  }
+ },
+ "train": null,
+ "notes": "../notes/01_tabular_q_learning.html",
+ "source_ckpt": "tabular_q_12x12_seed1.json",
+ "id": "01_tabular_q",
+ "date": "2026-10-13T18:58:01",
+ "json_mb": 0.007
+}

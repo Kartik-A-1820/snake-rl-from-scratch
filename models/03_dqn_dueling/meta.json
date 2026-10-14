@@ -1,0 +1,90 @@
+{
+ "name": "DQN + dueling (1 M steps)",
+ "tryout": 3,
+ "family": "dqn",
+ "description": "Tryout 02's DQN with a dueling head. 1 M steps, best of 3 seeds.",
+ "obs": "grid",
+ "size": 12,
+ "size_locked": true,
+ "mask": false,
+ "components": [
+  "double",
+  "dueling"
+ ],
+ "params": 582436,
+ "fp32_mb": 2.33,
+ "onnx_mb": 2.35,
+ "onnx_cpu_latency_us": 171.1,
+ "onnx_max_abs_err": 1.1324882507324219e-06,
+ "epoch": 20,
+ "select_score": 12.920000076293945,
+ "val_mean": 12.920000076293945,
+ "test": {
+  "n": 500,
+  "mean": 13.04,
+  "std": 5.930800957712203,
+  "median": 14.0,
+  "p10": 2.900000810623169,
+  "p90": 20.0,
+  "max": 25,
+  "wins": 0,
+  "causes": {
+   "wall": 17,
+   "self": 392,
+   "timeout": 91
+  }
+ },
+ "requires": "board image 4x14x14 (grid4)",
+ "replays": [],
+ "train": {
+  "run": "t03_duel_s1",
+  "env_steps": 1000000,
+  "updates": 122496,
+  "seconds": 2167,
+  "steps_per_s": 465,
+  "vram_mb": 626,
+  "device": "cuda:0 NVIDIA GeForce GTX 1650 Ti, 4.0 GiB, sm_75, torch 2.14.1+cu130 (CUDA 13.0)",
+  "batch": 128,
+  "n_step": 3,
+  "dueling": true,
+  "double": true,
+  "algo": "02_dqn"
+ },
+ "curve": [
+  [
+   250016,
+   1.89
+  ],
+  [
+   500000,
+   5.06
+  ],
+  [
+   750016,
+   10.05
+  ],
+  [
+   1000000,
+   13.04
+  ]
+ ],
+ "notes": "../notes/03_dqn_upgrades.html",
+ "source_ckpt": "t03_duel_s1_best.pt",
+ "provisional": false,
+ "id": "03_dqn_dueling",
+ "date": "2026-10-14T16:31:52",
+ "json_mb": 6.011,
+ "seed_stats": {
+  "n": 3,
+  "mean": 11.798666636149088,
+  "std": 1.0826196300933146,
+  "min": 11.050000190734863,
+  "max": 13.039999961853027,
+  "per_seed": [
+   11.05,
+   13.04,
+   11.31
+  ],
+  "scope": "1 M-step runs"
+ }
+}

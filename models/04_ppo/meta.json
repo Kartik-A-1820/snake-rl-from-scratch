@@ -1,0 +1,89 @@
+{
+ "name": "PPO (CNN, action mask)",
+ "tryout": 4,
+ "family": "ppo",
+ "description": "PPO actor-critic with invalid-action masking on the board image, 10 M steps. Best-validation checkpoint of the best arm (seed run t04_ppo_mask_s1).",
+ "obs": "grid",
+ "size": 12,
+ "size_locked": true,
+ "mask": true,
+ "components": [
+  "mask"
+ ],
+ "params": 582436,
+ "fp32_mb": 2.33,
+ "onnx_mb": 1.294,
+ "onnx_cpu_latency_us": 78.5,
+ "onnx_max_abs_err": 4.76837158203125e-06,
+ "epoch": 16,
+ "select_score": 28.094999313354492,
+ "val_mean": 28.094999313354492,
+ "test": {
+  "n": 500,
+  "mean": 26.326,
+  "std": 13.82301428777385,
+  "median": 30.0,
+  "p10": 1.0,
+  "p90": 41.0,
+  "max": 50,
+  "wins": 0,
+  "causes": {
+   "wall": 23,
+   "self": 379,
+   "timeout": 98
+  }
+ },
+ "requires": "board image 4x14x14 (grid4)",
+ "replays": [],
+ "train": {
+  "run": "t04_ppo_mask_s1",
+  "env_steps": 9502720,
+  "updates": 18560,
+  "seconds": 2857,
+  "steps_per_s": 3362,
+  "vram_mb": 234,
+  "device": "cuda:0 NVIDIA GeForce GTX 1650 Ti, 4.0 GiB, sm_75, torch 2.14.1+cu130 (CUDA 13.0)",
+  "batch": 16384,
+  "n_step": 1,
+  "dueling": false,
+  "double": true,
+  "algo": "04_ppo"
+ },
+ "curve": [
+  [
+   2015232,
+   8.5
+  ],
+  [
+   4014080,
+   16.24
+  ],
+  [
+   6012928,
+   22.27
+  ],
+  [
+   8011776,
+   26.33
+  ]
+ ],
+ "notes": "../notes/04_ppo.html",
+ "source_ckpt": "t04_ppo_mask_s1_best.pt",
+ "provisional": false,
+ "id": "04_ppo",
+ "date": "2026-10-14T16:37:02",
+ "json_mb": 3.367,
+ "seed_stats": {
+  "n": 3,
+  "mean": 26.17533302307129,
+  "std": 0.3923332346938041,
+  "min": 25.729999542236328,
+  "max": 26.469999313354492,
+  "per_seed": [
+   26.47,
+   26.33,
+   25.73
+  ],
+  "scope": "10 M-step runs of the same arm"
+ }
+}

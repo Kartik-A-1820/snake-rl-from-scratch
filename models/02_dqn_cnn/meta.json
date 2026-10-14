@@ -1,0 +1,151 @@
+{
+ "name": "DQN (CNN, grid)",
+ "tryout": 2,
+ "family": "dqn",
+ "description": "Double DQN, 3-step returns, CNN on the 4x14x14 board image. 5 M env steps on CUDA.",
+ "obs": "grid",
+ "size": 12,
+ "size_locked": true,
+ "mask": false,
+ "components": [
+  "double"
+ ],
+ "params": 319779,
+ "fp32_mb": 1.279,
+ "onnx_mb": 1.293,
+ "onnx_cpu_latency_us": 347.7,
+ "onnx_max_abs_err": 1.7881393432617188e-06,
+ "epoch": 65,
+ "select_score": 24.584999084472656,
+ "val_mean": 24.584999084472656,
+ "test": {
+  "n": 500,
+  "mean": 24.536,
+  "std": 10.831098928548293,
+  "median": 26.0,
+  "p10": 8.0,
+  "p90": 37.0,
+  "max": 45,
+  "wins": 0,
+  "causes": {
+   "wall": 39,
+   "self": 443,
+   "timeout": 18
+  }
+ },
+ "requires": "board image 4x14x14 (grid4)",
+ "train": {
+  "run": "dqn_cnn_12x12_long",
+  "env_steps": 5000000,
+  "updates": 622496,
+  "seconds": 5878,
+  "steps_per_s": 873,
+  "vram_mb": 619,
+  "device": "cuda:0 NVIDIA GeForce GTX 1650 Ti, 4.0 GiB, sm_75, torch 2.14.1+cu130 (CUDA 13.0)",
+  "batch": 128,
+  "n_step": 3,
+  "dueling": false,
+  "double": true,
+  "algo": "02_dqn"
+ },
+ "curve": [
+  [
+   250016,
+   1.22
+  ],
+  [
+   500000,
+   1.07
+  ],
+  [
+   750016,
+   1.2
+  ],
+  [
+   1000000,
+   1.12
+  ],
+  [
+   1250016,
+   1.23
+  ],
+  [
+   1500000,
+   1.88
+  ],
+  [
+   1750016,
+   3.76
+  ],
+  [
+   2000000,
+   6.92
+  ],
+  [
+   2250016,
+   11.47
+  ],
+  [
+   2500000,
+   13.79
+  ],
+  [
+   2750016,
+   15.43
+  ],
+  [
+   3000000,
+   21.21
+  ],
+  [
+   3250016,
+   24.54
+  ],
+  [
+   3500000,
+   21.29
+  ],
+  [
+   3750016,
+   19.0
+  ],
+  [
+   4000000,
+   21.62
+  ],
+  [
+   4250016,
+   22.32
+  ],
+  [
+   4500000,
+   18.48
+  ],
+  [
+   4750016,
+   16.87
+  ],
+  [
+   5000000,
+   24.87
+  ]
+ ],
+ "notes": "../notes/02_dqn.html",
+ "source_ckpt": "dqn_cnn_12x12_long_best.pt",
+ "id": "02_dqn_cnn",
+ "date": "2026-10-13T19:01:11",
+ "json_mb": 3.244,
+ "seed_stats": {
+  "n": 3,
+  "mean": 16.451332728068035,
+  "std": 1.9938648914336716,
+  "min": 14.295999526977539,
+  "max": 18.229999542236328,
+  "per_seed": [
+   16.83,
+   18.23,
+   14.3
+  ],
+  "scope": "1 M-step runs of the same setup"
+ }
+}
