@@ -102,7 +102,7 @@ RUN_INFO = {   # run name -> (what it is, what it started from)
     "t05_10x10_win6_cont": ("10x10, the run above continued for 16 M more steps", "10x10 agent (16 M steps)"),
     "t05_10x10_win6_trap_s0": ("10x10 from the shielded 8x8 agent (paused at 3 M steps)", "8x8 shielded agent"),
     "t05_12x12_win6_scratch": ("12x12 from scratch (24 M steps)", "scratch"),
-    "t05_12x12_ext": ("12x12, the run above continued (extended run, in progress)", "12x12 agent (24 M steps)"),
+    "t05_12x12_ext": ("12x12, the run above continued (extended run, stopped by the plateau rule)", "12x12 agent (24 M steps)"),
 }
 
 
@@ -117,7 +117,7 @@ def tryout05():
         init = Path(c["init_from"]).stem.removesuffix("_best") if c.get("init_from") else None
         init_size = (init.split("_")[1] if init and init.startswith("t05_") else ("12x12 (24 M steps)" if init and "12x12" in init else None)) if init else None   # t05_6x6_win5_s0 -> 6x6
         info = RUN_INFO.get(d.name, (d.name, init_size or "scratch"))
-        run = {"name": d.name, "label": info[0], "start": info[1], "in_progress": bool(s.get("in_progress")) or d.name == "t05_12x12_ext", "init_from": init_size, "scratch": c["size"] > 6 and not init and "ext" not in d.name, "best": s["best"], "steps": s["epochs"][-1]["env_steps"],
+        run = {"name": d.name, "label": info[0], "start": info[1], "in_progress": bool(s.get("in_progress")) , "init_from": init_size, "scratch": c["size"] > 6 and not init and "ext" not in d.name, "best": s["best"], "steps": s["epochs"][-1]["env_steps"],
                "curve": [[cp["epoch"], cp["test"]["mean"], cp["test"]["wins"], cp["test"].get("n", 500)] for cp in s["checkpoints"]],
                "first_win": {k: v for k, v in (s.get("first_win") or {}).items() if k != "replays"} or None}
         stages.setdefault(c["size"], []).append(run)

@@ -1,11 +1,11 @@
 {
- "time": "2026-10-14T21:54:44",
+ "time": "2026-10-15T04:08:44",
  "envs": 1024,
  "restarts": 0,
- "temp": 51,
- "util": 31,
- "sm_mhz": 1350,
- "power_w": 18.29,
- "throttle": 36,
- "mem_mb": 1069
+ "temp": 46,
+ "util": 0,
+ "sm_mhz": 300,
+ "power_w": 1.9,
+ "throttle": 1,
+ "mem_mb": 7
 }

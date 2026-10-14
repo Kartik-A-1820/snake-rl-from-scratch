@@ -6,6 +6,9 @@
 # * If the temperature stays at or above --temp-limit (default 87 C) for --sustain samples (default 6, i.e. 3 minutes) it logs the event
 #   to results/bench/gpu_events.log, asks the job to stop cleanly (results/STOP_<name>), and relaunches it with half the parallel
 #   environments (minimum 256), keeping the minibatch size at 2048. It never raises the load again by itself.
+# * Watchdog: if the job's log has not been written for --hang-minutes (default 25; a checkpoint evaluation takes under 10) the job is
+#   considered hung (this happened once, when a GPU driver update made CUDA fail inside the job while its launcher stayed alive), its
+#   whole process tree is killed and it is relaunched from the last saved state.
 # * Status for humans: results/ext_supervisor.json. Stop everything: create results/STOP (the job saves its state and exits).
 import argparse
 import csv
@@ -13,6 +16,8 @@ import json
 import subprocess
 import sys
 import time
+
+import psutil
 from datetime import datetime
 from pathlib import Path
 
@@ -30,6 +35,16 @@ def gpu():
         return {"temp": int(t), "util": int(u), "sm_mhz": int(c), "power_w": float(p), "throttle": int(th, 16), "mem_mb": int(m)}
     except Exception:
         return None
+
+
+def kill_tree(proc):
+    try:
+        parent = psutil.Process(proc.pid)
+        for c in parent.children(recursive=True):
+            c.kill()
+        parent.kill()
+    except psutil.NoSuchProcess:
+        pass
 
 
 def command(a, envs):
@@ -56,6 +71,7 @@ def main():
     ap.add_argument("--temp-limit", type=int, default=87)
     ap.add_argument("--sustain", type=int, default=6)
     ap.add_argument("--poll", type=int, default=30)
+    ap.add_argument("--hang-minutes", type=int, default=25)
     a = ap.parse_args()
     (RES / "bench").mkdir(parents=True, exist_ok=True)
     tl, ev = RES / "bench" / "gpu_temp_log.csv", RES / "bench" / "gpu_events.log"
@@ -107,6 +123,10 @@ def main():
             if hot >= a.sustain and envs <= 256 and time.time() - last_reduce > 1200:
                 event(f"temperature {g['temp']} C still >= {a.temp_limit} C at the minimum load (256 envs): logged, not reducing further")
                 last_reduce = time.time()
+        if proc is not None and proc.poll() is None and log.exists() and time.time() - log.stat().st_mtime > a.hang_minutes * 60:
+            event(f"{a.name}: no log output for {a.hang_minutes} minutes: treating the job as hung, killing it and resuming from the saved state")
+            kill_tree(proc)
+            proc.wait()
         if proc is not None and proc.poll() is not None:
             code = proc.returncode
             done = (RES / "phase4_ppo" / a.name / "summary.json").exists()
