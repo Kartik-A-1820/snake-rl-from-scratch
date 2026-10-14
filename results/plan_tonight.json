@@ -1,0 +1,232 @@
+[
+ {
+  "name": "t05_8x8_win6_scratch",
+  "script": "train_ppo.py",
+  "args": [
+   "--device",
+   "cuda",
+   "--mask",
+   "--gamma",
+   "0.995",
+   "--win-reward",
+   "10",
+   "--total-steps",
+   "12000000",
+   "--epoch-steps",
+   "500000",
+   "--checkpoint-every",
+   "2",
+   "--obs",
+   "win6",
+   "--size",
+   "8",
+   "--description",
+   "PPO with an action mask on the size-agnostic canvas, trained to fill a 8x8 board."
+  ],
+  "peak_mb": 800
+ },
+ {
+  "name": "t03_duel_s1",
+  "script": "train_dqn.py",
+  "args": [
+   "--device",
+   "cuda",
+   "--total-steps",
+   "1000000",
+   "--checkpoint-every",
+   "5",
+   "--dueling",
+   "--seed",
+   "1"
+  ],
+  "peak_mb": 900
+ },
+ {
+  "name": "t03_duel_per_s1",
+  "script": "train_dqn.py",
+  "args": [
+   "--device",
+   "cuda",
+   "--total-steps",
+   "1000000",
+   "--checkpoint-every",
+   "5",
+   "--dueling",
+   "--per",
+   "--seed",
+   "1"
+  ],
+  "peak_mb": 900
+ },
+ {
+  "name": "t03_mask_s1",
+  "script": "train_dqn.py",
+  "args": [
+   "--device",
+   "cuda",
+   "--total-steps",
+   "1000000",
+   "--checkpoint-every",
+   "5",
+   "--mask",
+   "--seed",
+   "1"
+  ],
+  "peak_mb": 900
+ },
+ {
+  "name": "t03_full_s1",
+  "script": "train_dqn.py",
+  "args": [
+   "--device",
+   "cuda",
+   "--total-steps",
+   "1000000",
+   "--checkpoint-every",
+   "5",
+   "--dueling",
+   "--per",
+   "--mask",
+   "--seed",
+   "1"
+  ],
+  "peak_mb": 900
+ },
+ {
+  "name": "t04_ppo_base_s1",
+  "script": "train_ppo.py",
+  "args": [
+   "--device",
+   "cuda",
+   "--total-steps",
+   "10000000",
+   "--epoch-steps",
+   "500000",
+   "--checkpoint-every",
+   "4",
+   "--seed",
+   "1"
+  ],
+  "peak_mb": 600
+ },
+ {
+  "name": "t04_ppo_mask_s1",
+  "script": "train_ppo.py",
+  "args": [
+   "--device",
+   "cuda",
+   "--total-steps",
+   "10000000",
+   "--epoch-steps",
+   "500000",
+   "--checkpoint-every",
+   "4",
+   "--mask",
+   "--seed",
+   "1"
+  ],
+  "peak_mb": 600
+ },
+ {
+  "name": "t03_duel_s2",
+  "script": "train_dqn.py",
+  "args": [
+   "--device",
+   "cuda",
+   "--total-steps",
+   "1000000",
+   "--checkpoint-every",
+   "5",
+   "--dueling",
+   "--seed",
+   "2"
+  ],
+  "peak_mb": 900
+ },
+ {
+  "name": "t03_duel_per_s2",
+  "script": "train_dqn.py",
+  "args": [
+   "--device",
+   "cuda",
+   "--total-steps",
+   "1000000",
+   "--checkpoint-every",
+   "5",
+   "--dueling",
+   "--per",
+   "--seed",
+   "2"
+  ],
+  "peak_mb": 900
+ },
+ {
+  "name": "t03_mask_s2",
+  "script": "train_dqn.py",
+  "args": [
+   "--device",
+   "cuda",
+   "--total-steps",
+   "1000000",
+   "--checkpoint-every",
+   "5",
+   "--mask",
+   "--seed",
+   "2"
+  ],
+  "peak_mb": 900
+ },
+ {
+  "name": "t03_full_s2",
+  "script": "train_dqn.py",
+  "args": [
+   "--device",
+   "cuda",
+   "--total-steps",
+   "1000000",
+   "--checkpoint-every",
+   "5",
+   "--dueling",
+   "--per",
+   "--mask",
+   "--seed",
+   "2"
+  ],
+  "peak_mb": 900
+ },
+ {
+  "name": "t04_ppo_base_s2",
+  "script": "train_ppo.py",
+  "args": [
+   "--device",
+   "cuda",
+   "--total-steps",
+   "10000000",
+   "--epoch-steps",
+   "500000",
+   "--checkpoint-every",
+   "4",
+   "--seed",
+   "2"
+  ],
+  "peak_mb": 600
+ },
+ {
+  "name": "t04_ppo_mask_s2",
+  "script": "train_ppo.py",
+  "args": [
+   "--device",
+   "cuda",
+   "--total-steps",
+   "10000000",
+   "--epoch-steps",
+   "500000",
+   "--checkpoint-every",
+   "4",
+   "--mask",
+   "--seed",
+   "2"
+  ],
+  "peak_mb": 600
+ }
+]

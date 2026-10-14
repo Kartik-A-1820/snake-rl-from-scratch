@@ -1,0 +1,50 @@
+{
+ "family": "ppo",
+ "idle_gpu_mem_mb": 1723,
+ "gpu_total_mb": 4096,
+ "rows": [
+  {
+   "jobs": 1,
+   "per_job_steps_per_s": [
+    6976
+   ],
+   "aggregate_steps_per_s": 6976,
+   "gpu_util_pct": 79,
+   "gpu_mem_used_mb": 2161,
+   "cpu_util_pct": 30,
+   "torch_peak_alloc_mb_per_job": 234,
+   "wall_s": 116,
+   "gpu_mem_idle_mb": 1723
+  },
+  {
+   "jobs": 2,
+   "per_job_steps_per_s": [
+    3440,
+    3458
+   ],
+   "aggregate_steps_per_s": 6898,
+   "gpu_util_pct": 99,
+   "gpu_mem_used_mb": 2640,
+   "cpu_util_pct": 23,
+   "torch_peak_alloc_mb_per_job": 234,
+   "wall_s": 214,
+   "gpu_mem_idle_mb": 1723
+  },
+  {
+   "jobs": 3,
+   "per_job_steps_per_s": [
+    2410,
+    2414,
+    2445
+   ],
+   "aggregate_steps_per_s": 7268,
+   "gpu_util_pct": 100,
+   "gpu_mem_used_mb": 3021,
+   "cpu_util_pct": 25,
+   "torch_peak_alloc_mb_per_job": 234,
+   "wall_s": 298,
+   "gpu_mem_idle_mb": 1723
+  }
+ ],
+ "note": "k=4 not measured: the four jobs did not fit next to the suspended DQN jobs (CUDA out of memory)"
+}

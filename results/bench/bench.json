@@ -1,0 +1,267 @@
+{
+ "machine": {
+  "platform": "Windows-10-10.0.26300-SP0",
+  "devices": [
+   "cpu AMD64 Family 23 Model 96 Stepping 1, AuthenticAMD, 8 threads, torch 2.14.1+cu130",
+   "cuda:0 NVIDIA GeForce GTX 1650 Ti, 4.0 GiB, sm_75, torch 2.14.1+cu130 (CUDA 13.0)"
+  ]
+ },
+ "inference": [
+  {
+   "model": "mlp 11\u219264\u219264\u21923",
+   "params": 5123,
+   "device": "cpu",
+   "threads": 1,
+   "batch": 1,
+   "latency_us": 46.2
+  },
+  {
+   "model": "mlp 11\u219264\u219264\u21923",
+   "params": 5123,
+   "device": "cpu",
+   "threads": 8,
+   "batch": 1,
+   "latency_us": 46.4
+  },
+  {
+   "model": "mlp 11\u219264\u219264\u21923",
+   "params": 5123,
+   "device": "cuda",
+   "threads": null,
+   "batch": 1,
+   "latency_us": 190.4
+  },
+  {
+   "model": "cnn 4x14x14",
+   "params": 319779,
+   "device": "cpu",
+   "threads": 1,
+   "batch": 1,
+   "latency_us": 260.8
+  },
+  {
+   "model": "cnn 4x14x14",
+   "params": 319779,
+   "device": "cpu",
+   "threads": 8,
+   "batch": 1,
+   "latency_us": 266.7
+  },
+  {
+   "model": "cnn 4x14x14",
+   "params": 319779,
+   "device": "cuda",
+   "threads": null,
+   "batch": 1,
+   "latency_us": 512.0
+  },
+  {
+   "model": "mlp 11\u219264\u219264\u21923",
+   "params": 5123,
+   "device": "onnxruntime-cpu",
+   "threads": 1,
+   "batch": 1,
+   "latency_us": 15.4
+  },
+  {
+   "model": "cnn 4x14x14",
+   "params": 319779,
+   "device": "onnxruntime-cpu",
+   "threads": 1,
+   "batch": 1,
+   "latency_us": 72.7
+  }
+ ],
+ "train_step": [
+  {
+   "model": "mlp 11\u219264\u219264\u21923",
+   "device": "cpu",
+   "batch": 64,
+   "ms_per_step": 1.174,
+   "samples_per_s": 54511
+  },
+  {
+   "model": "mlp 11\u219264\u219264\u21923",
+   "device": "cpu",
+   "batch": 256,
+   "ms_per_step": 1.281,
+   "samples_per_s": 199871
+  },
+  {
+   "model": "mlp 11\u219264\u219264\u21923",
+   "device": "cpu",
+   "batch": 1024,
+   "ms_per_step": 1.756,
+   "samples_per_s": 583278
+  },
+  {
+   "model": "mlp 11\u219264\u219264\u21923",
+   "device": "cpu",
+   "batch": 4096,
+   "ms_per_step": 3.181,
+   "samples_per_s": 1287848
+  },
+  {
+   "model": "mlp 11\u219264\u219264\u21923",
+   "device": "cuda",
+   "batch": 64,
+   "ms_per_step": 2.124,
+   "samples_per_s": 30135
+  },
+  {
+   "model": "mlp 11\u219264\u219264\u21923",
+   "device": "cuda",
+   "batch": 256,
+   "ms_per_step": 1.977,
+   "samples_per_s": 129504
+  },
+  {
+   "model": "mlp 11\u219264\u219264\u21923",
+   "device": "cuda",
+   "batch": 1024,
+   "ms_per_step": 1.94,
+   "samples_per_s": 527952
+  },
+  {
+   "model": "mlp 11\u219264\u219264\u21923",
+   "device": "cuda",
+   "batch": 4096,
+   "ms_per_step": 1.945,
+   "samples_per_s": 2106432
+  },
+  {
+   "model": "cnn 4x14x14",
+   "device": "cpu",
+   "batch": 64,
+   "ms_per_step": 8.852,
+   "samples_per_s": 7230
+  },
+  {
+   "model": "cnn 4x14x14",
+   "device": "cpu",
+   "batch": 256,
+   "ms_per_step": 27.327,
+   "samples_per_s": 9368
+  },
+  {
+   "model": "cnn 4x14x14",
+   "device": "cpu",
+   "batch": 1024,
+   "ms_per_step": 106.078,
+   "samples_per_s": 9653
+  },
+  {
+   "model": "cnn 4x14x14",
+   "device": "cpu",
+   "batch": 4096,
+   "ms_per_step": 413.872,
+   "samples_per_s": 9897
+  },
+  {
+   "model": "cnn 4x14x14",
+   "device": "cuda",
+   "batch": 64,
+   "ms_per_step": 2.859,
+   "samples_per_s": 22385
+  },
+  {
+   "model": "cnn 4x14x14",
+   "device": "cuda",
+   "batch": 256,
+   "ms_per_step": 6.175,
+   "samples_per_s": 41454
+  },
+  {
+   "model": "cnn 4x14x14",
+   "device": "cuda",
+   "batch": 1024,
+   "ms_per_step": 18.187,
+   "samples_per_s": 56303
+  },
+  {
+   "model": "cnn 4x14x14",
+   "device": "cuda",
+   "batch": 4096,
+   "ms_per_step": 64.046,
+   "samples_per_s": 63954
+  }
+ ],
+ "env": [
+  {
+   "env": "scalar python",
+   "device": "cpu",
+   "n_envs": 1,
+   "steps_per_s": 321114
+  },
+  {
+   "env": "torch vec (grid obs)",
+   "device": "cpu",
+   "n_envs": 1,
+   "steps_per_s": 824,
+   "ms_per_step": 1.214
+  },
+  {
+   "env": "torch vec (grid obs)",
+   "device": "cpu",
+   "n_envs": 64,
+   "steps_per_s": 31062,
+   "ms_per_step": 2.06
+  },
+  {
+   "env": "torch vec (grid obs)",
+   "device": "cpu",
+   "n_envs": 256,
+   "steps_per_s": 58426,
+   "ms_per_step": 4.382
+  },
+  {
+   "env": "torch vec (grid obs)",
+   "device": "cpu",
+   "n_envs": 1024,
+   "steps_per_s": 199705,
+   "ms_per_step": 5.128
+  },
+  {
+   "env": "torch vec (grid obs)",
+   "device": "cpu",
+   "n_envs": 4096,
+   "steps_per_s": 187602,
+   "ms_per_step": 21.833
+  },
+  {
+   "env": "torch vec (grid obs)",
+   "device": "cuda",
+   "n_envs": 1,
+   "steps_per_s": 144,
+   "ms_per_step": 6.925
+  },
+  {
+   "env": "torch vec (grid obs)",
+   "device": "cuda",
+   "n_envs": 64,
+   "steps_per_s": 8312,
+   "ms_per_step": 7.7
+  },
+  {
+   "env": "torch vec (grid obs)",
+   "device": "cuda",
+   "n_envs": 256,
+   "steps_per_s": 44468,
+   "ms_per_step": 5.757
+  },
+  {
+   "env": "torch vec (grid obs)",
+   "device": "cuda",
+   "n_envs": 1024,
+   "steps_per_s": 189427,
+   "ms_per_step": 5.406
+  },
+  {
+   "env": "torch vec (grid obs)",
+   "device": "cuda",
+   "n_envs": 4096,
+   "steps_per_s": 747672,
+   "ms_per_step": 5.478
+  }
+ ]
+}

@@ -1,0 +1,36 @@
+{
+  "_note": "Preliminary run, JS engine in browser (V8), 12x12, eval on seeds 100000-100999 greedy. Superseded by tabular_q_checkpoints.json.",
+  "baselines": {
+    "random": {"mean": 0.168, "median": 0, "p90": 1, "max": 2, "iqm": 0, "causes": {"wall": 995, "self": 5}},
+    "greedy_heuristic": {"mean": 20.416, "median": 20, "p10": 12, "p90": 30, "max": 48, "iqm": 19.794, "causes": {"self": 951, "wall": 49}}
+  },
+  "tabular_q_basic11": {
+    "config": {"episodes": 20000, "alpha": 0.1, "gamma": 0.95, "eps": "1.0 -> 0.01 linear over first 50%", "idleLimit": 100},
+    "seed1": {"mean": 20.279, "median": 20, "p10": 12, "p90": 29, "max": 44, "iqm": 19.952, "causes": {"self": 881, "wall": 119}, "train_s": 1.19, "train_steps": 2173663, "states_visited": 256},
+    "seed2": {"mean": 21.218, "median": 21, "p10": 12, "p90": 30, "max": 44, "iqm": 21.046, "causes": {"self": 923, "wall": 77}, "train_s": 1.07, "train_steps": 2165415, "states_visited": 256},
+    "seed3": {"mean": 20.043, "median": 19, "p10": 12, "p90": 29, "max": 45, "iqm": 19.564, "causes": {"self": 952, "wall": 48}, "train_s": 1.09, "train_steps": 2207961, "states_visited": 256}
+  },
+  "observations": [
+    "Only 256 of 2048 table rows are reachable: heading is one-hot (4 of 16), food direction has 8 combos, danger 8 -> 8*4*8 = 256.",
+    "Tabular Q matches the greedy heuristic (~20) and agrees with its action on 87.6% of greedy-visited states: the 11 features encode little more than the heuristic.",
+    "Size-invariant features transfer: table trained on 12x12 scores 18.35 / 25.42 / 29.70 on 10 / 16 / 20 boards (greedy: 17.89 / 24.50 / 27.97), 300 eval seeds.",
+    "Death is ~90% self-collision: the agent cannot see its body beyond one cell, so it traps itself."
+  ],
+  "gamma_alpha_sweep_10k_eps_3seeds_300evals": [
+    {"gamma": 0.5, "alpha": 0.05, "means": [22.02, 20.64, 19.73]},
+    {"gamma": 0.5, "alpha": 0.1, "means": [22.48, 22.19, 21.54]},
+    {"gamma": 0.5, "alpha": 0.3, "means": [18.39, 20.56, 22.69]},
+    {"gamma": 0.8, "alpha": 0.05, "means": [22.25, 20.97, 20.45]},
+    {"gamma": 0.8, "alpha": 0.1, "means": [19.81, 21.26, 21.8]},
+    {"gamma": 0.8, "alpha": 0.3, "means": [9.51, 19.95, 19.39]},
+    {"gamma": 0.9, "alpha": 0.05, "means": [22.0, 20.72, 20.97]},
+    {"gamma": 0.9, "alpha": 0.1, "means": [20.38, 19.34, 19.24]},
+    {"gamma": 0.9, "alpha": 0.3, "means": [19.83, 17.87, 20.89]},
+    {"gamma": 0.95, "alpha": 0.05, "means": [22.65, 21.53, 18.55]},
+    {"gamma": 0.95, "alpha": 0.1, "means": [18.64, 21.22, 20.56]},
+    {"gamma": 0.95, "alpha": 0.3, "means": [21.42, 18.71, 13.04]},
+    {"gamma": 0.99, "alpha": 0.05, "means": [17.57, 14.74, 16.33]},
+    {"gamma": 0.99, "alpha": 0.1, "means": [18.88, 17.86, 18.65]},
+    {"gamma": 0.99, "alpha": 0.3, "means": [24.05, 11.92, 10.1]}
+  ]
+}

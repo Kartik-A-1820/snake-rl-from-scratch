@@ -1,0 +1,9 @@
+{
+ "name": "dqn_cnn_12x12_long_best",
+ "params": 319779,
+ "fp32_mb": 1.279,
+ "json_mb": 3.244,
+ "onnx_mb": 0.015,
+ "onnx_max_abs_err": 1.7881393432617188e-06,
+ "onnx_cpu_latency_us": 72.0
+}

@@ -1,0 +1,49 @@
+{
+ "family": "dqn",
+ "idle_gpu_mem_mb": 1724,
+ "gpu_total_mb": 4096,
+ "rows": [
+  {
+   "jobs": 1,
+   "per_job_steps_per_s": [
+    892
+   ],
+   "aggregate_steps_per_s": 892,
+   "gpu_util_pct": 48,
+   "gpu_mem_used_mb": 2161,
+   "cpu_util_pct": 28,
+   "torch_peak_alloc_mb_per_job": 574,
+   "wall_s": 113,
+   "gpu_mem_idle_mb": 1724
+  },
+  {
+   "jobs": 2,
+   "per_job_steps_per_s": [
+    754,
+    772
+   ],
+   "aggregate_steps_per_s": 1527,
+   "gpu_util_pct": 98,
+   "gpu_mem_used_mb": 2601,
+   "cpu_util_pct": 30,
+   "torch_peak_alloc_mb_per_job": 574,
+   "wall_s": 130,
+   "gpu_mem_idle_mb": 1724
+  },
+  {
+   "jobs": 3,
+   "per_job_steps_per_s": [
+    518,
+    494,
+    507
+   ],
+   "aggregate_steps_per_s": 1518,
+   "gpu_util_pct": 99,
+   "gpu_mem_used_mb": 3038,
+   "cpu_util_pct": 31,
+   "torch_peak_alloc_mb_per_job": 574,
+   "wall_s": 192,
+   "gpu_mem_idle_mb": 1724
+  }
+ ]
+}
