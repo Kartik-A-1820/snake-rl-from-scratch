@@ -86,7 +86,7 @@ A *win* means every cell is filled. Win rates are over 500 held-out seeds; "mean
 | 8×8 | 64 | 8x8 from the 6x6 agent + trap shield (8 M steps) | 6x6 agent | **49.6%** (248/500) | 77% | 7.5 M |
 | 10×10 | 100 | 10x10, the run above continued for 16 M more steps | 10x10 agent (16 M steps) | **63.0%** (315/500) | 78% | 15.5 M |
 | 10×10 | 100 | 10x10 from scratch (16 M steps) | scratch | **0.0%** (0/500) | 63% | 15.5 M |
-| 10×10 | 100 | 10x10 from the shielded 8x8 agent (paused at 3 M steps) *(in progress)* | 8x8 shielded agent | **0.0%** (0/500) | 35% | 3.0 M |
+| 10×10 | 100 | 10x10 from the shielded 8x8 agent (paused at 3 M steps) *(paused, not finished)* | 8x8 shielded agent | **0.0%** (0/500) | 35% | 3.0 M |
 | 12×12 | 144 | 12x12, the run above continued (extended run, stopped by the plateau rule) | 12x12 agent (24 M steps) | **68.0%** (340/500) | 85% | 135.0 M |
 | 12×12 | 144 | 12x12 from scratch (24 M steps) | scratch | **0.0%** (0/500) | 49% | 23.5 M |
 | 6×6 | 36 | Hamiltonian cycle (planning, not RL) | – | **100%** | 100% | 0 |

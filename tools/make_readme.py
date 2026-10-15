@@ -64,7 +64,7 @@ def wins_table():
     for st in R["stages"]:
         for r in st["runs"]:
             t = r["best"]["test"]
-            rows.append(f"| {st['size']}×{st['size']} | {st['size'] ** 2} | {r.get('label', r['name'])}{' *(in progress)*' if r.get('in_progress') else ''} | {r.get('start', r['init_from'] or 'scratch')} | **{100 * t['wins'] / t.get('n', 500):.1f}%** "
+            rows.append(f"| {st['size']}×{st['size']} | {st['size'] ** 2} | {r.get('label', r['name'])}{' *(paused, not finished)*' if r.get('in_progress') else ''} | {r.get('start', r['init_from'] or 'scratch')} | **{100 * t['wins'] / t.get('n', 500):.1f}%** "
                         f"({t['wins']}/{t.get('n', 500)}) | {100 * t['mean'] / (st['size'] ** 2 - 3):.0f}% | {r['steps'] / 1e6:.1f} M |")
     for h in R.get("hamilton") or []:
         rows.append(f"| {h['size']}×{h['size']} | {h['size'] ** 2} | Hamiltonian cycle (planning, not RL) | – | **{100 * h['win_rate']:.0f}%** | 100% | 0 |")
