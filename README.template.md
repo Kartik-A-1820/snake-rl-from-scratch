@@ -1,7 +1,14 @@
+<!-- TODO before publishing: replace OWNER (GitHub username) in this file and in CITATION.cff, and the copyright name in LICENSE / LICENSE-docs. -->
 # Snake RL from scratch
 
 **A free reinforcement-learning course on one tiny game: theory, hands-on code, and a demo you can open in a browser.**
-Tabular Q-learning → deep Q-networks and their upgrades → PPO → a "win the whole board" challenge, each with an interactive note, runnable code, multi-seed experiments and trained agents.
+Tabular Q-learning → deep Q-networks and their upgrades → PPO → a "win the whole board" challenge. Each step has an interactive note, runnable code, multi-seed experiments and trained agents.
+
+> **Headline result.** Pure reinforcement learning (masked PPO with a reachable-area input channel, no planner) learns to **fill the whole board**
+> on 6×6 (**97%** of games), 8×8 (**89%**), 10×10 (**63%**) and the standard 12×12 (**68%**, 340 of 500), trained on **one laptop GPU
+> (GTX 1650 Ti, 4 GB)**, about **{{HOURS}} hours** of training in total for the whole course. Win rates are measured on 500 held-out games
+> with the greedy policy; each win agent is a **single training run**, so read them as one measurement, not a mean over seeds.
+> Every agent that optimised the score alone, on the same 12×12 board, never filled it.
 
 ![Agents playing Snake side by side](docs/agents.gif)
 
@@ -9,8 +16,8 @@ Tabular Q-learning → deep Q-networks and their upgrades → PPO → a "win the
 
 ![Win-challenge agents filling the board](docs/wins.gif)
 
-**▶ Play and watch the agents:** open [`game/index.html`](game/index.html) (double-click it; no server needed), or the hosted version at `https://OWNER.github.io/snake-rl-from-scratch/`.
-Everything was trained on one laptop: an NVIDIA GTX 1650 Ti with 4 GB of memory.
+**▶ Play and watch the agents:** open [`game/index.html`](game/index.html) (double-click it; it runs from disk with no server), or the hosted version at `https://OWNER.github.io/snake-rl-from-scratch/` *(available once the repository is published, replace `OWNER`)*.
+**📖 Read the course:** the [notes index](#the-course) (interactive HTML, DOCX, and one master book).
 
 ## What makes this more than a demo
 
@@ -22,13 +29,15 @@ Everything was trained on one laptop: an NVIDIA GTX 1650 Ti with 4 GB of memory.
 
 ## The course
 
-| # | Concept | Read | Result |
+One tryout per chapter: concepts, then the interactive note, a downloadable DOCX, and the key result.
+
+| # | Concepts | Read | Key result |
 |---|---|---|---|
-| 01 | Tabular Q-learning: MDPs, Bellman backups, ε-greedy, why 11 hand-made features hit a ceiling | [note](notes/01_tabular_q_learning.html) · [docx](notes/01_tabular_q_learning.docx) | mean ≈ 20 on 12×12 |
+| 01 | Tabular Q-learning: MDPs, Bellman backups, ε-greedy, why 11 hand-made features hit a ceiling | [note](notes/01_tabular_q_learning.html) · [docx](notes/01_tabular_q_learning.docx) | mean ≈ 20 on 12×12 (a ceiling) |
 | 02 | Deep Q-networks: function approximation, replay, target networks, Double DQN, GPU-batched environments; a failed run and its diagnosis | [note](notes/02_dqn.html) · [docx](notes/02_dqn.docx) | CNN DQN, best checkpoint 24.5 |
-| 03 | Upgrading DQN: dueling, prioritized replay, action masking, a multi-seed ablation | [note](notes/03_dqn_upgrades.html) · [docx](notes/03_dqn_upgrades.docx) | most upgrades did *not* help here |
+| 03 | Upgrading DQN: dueling, prioritized replay, action masking, a multi-seed ablation | [note](notes/03_dqn_upgrades.html) · [docx](notes/03_dqn_upgrades.docx) | most upgrades did *not* help here (untuned) |
 | 04 | Policy gradients and PPO: REINFORCE, baselines, GAE, clipping, on- vs off-policy, throughput on a small GPU | [note](notes/04_ppo.html) · [docx](notes/04_ppo.docx) | masked PPO: the best learned 12×12 agent |
-| 05 | The win challenge: curriculum learning, sparse rewards, long horizons, and a planner that never loses | [note](notes/05_win_challenge.html) · [docx](notes/05_win_challenge.docx) | wins on small boards; see the table |
+| 05 | The win challenge: curriculum learning, sparse rewards, long horizons, and a planner that never loses | [note](notes/05_win_challenge.html) · [docx](notes/05_win_challenge.docx) | PPO fills 6×6, 8×8, 10×10 and 12×12 boards (97 / 89 / 63 / 68%) |
 
 The whole course as one book: [`notes/snake_rl_master.docx`](notes/snake_rl_master.docx).
 
@@ -56,6 +65,12 @@ A *win* means every cell is filled. Win rates are over 500 held-out seeds; "mean
 
 {{WINS}}
 
+**The 12×12 trajectory.** The 24 M-step run won nothing; the extension (same recipe, more parallel environments) won its first game after about 12 M further steps, climbed steadily to about 50 M, and then moved between 55% and 70% until the plateau rule stopped it at 135 M further steps (158 M in total). The published agent is the checkpoint with the best *validation* score (340/500); the best single test evaluation was 350/500. Full table: [`docs/12x12_trajectory.md`](docs/12x12_trajectory.md).
+
+![12x12 learning trajectory](docs/12x12_trajectory.png)
+
+{{TRAJECTORY}}
+
 ## Findings
 
 These are the results that surprised me, in the order they came up. Each is backed by the multi-seed tables above and discussed in the notes.
@@ -63,8 +78,10 @@ These are the results that surprised me, in the order they came up. Each is back
 1. **A DQN that "doesn't learn" can be a schedule bug, not an algorithm problem.** The first CNN run scored below 1 (the tabular agent scores 20): only about 7 600 gradient steps and 7 target-network syncs in 1 M environment steps. Changing the replay ratio (more updates per environment step, smaller batches, more frequent syncs) and adding 3-step returns took the same network to **16.5 ± 2.0** (3 seeds). An 11-feature MLP with the original schedule had already reached 20.9, which is what pointed at the schedule. ([note 02](notes/02_dqn.html))
 2. **Reward shaping hurt.** Potential-based shaping (the theoretically safe kind, with a proof sketch and a test of the telescoping identity), naive "closer is good" shaping and a timeout penalty all scored below the unshaped baseline at 1 M steps; across 3 seeds potential shaping gave 11.7 against 16.5. Shaping preserves the optimal policy, it does not promise faster learning. ([note 02, §8b](notes/02_dqn.html))
 3. **Dueling, prioritized replay and masking did not improve the DQN here.** Three seeds each: dueling 11.8 ± 1.1, dueling + PER 7.5 ± 0.4, masking alone 14.5 ± 0.7, all combined 12.1 ± 1.2, against 16.5 ± 2.0 for the plain recipe. These are untuned defaults and one network, so this says "did not transfer automatically", not "do not work". At 5 M steps the combination also lost (19.4 against 24.5, one seed). ([note 03](notes/03_dqn_upgrades.html))
-4. **Action masking made PPO reliable.** Masked PPO scores **26.2 ± 0.4** over three seeds; the unmasked arm ranges from 7.9 to 21.4 (16.0 ± 7.1) because it circles until the starvation limit. Masked PPO is the best learned agent on the standard 12×12 board here, and it processes about 8× more environment steps per second than the DQN on the same GPU (about 7 000 against 900), though the DQN is the more sample-efficient of the two. ([note 04](notes/04_ppo.html))
-5. **Winning is a different problem from scoring.** No agent that optimised the score ever filled a 12×12 board. A masked PPO agent with a reachable-area input channel fills a **6×6 board in 97% of games and 8×8 in 89%**, and 10×10 in **63%** after a long continued run. The 24 M-step 12×12 run won nothing (best game 120 of 141 cells); continuing it with more parallel environments produced the first 12×12 win after about 12 M further steps, and **68% of games (340 of 500) at the end of the extended run, 135 M further steps** (a single run that plateaued at 60–70%; see the table above). The reachable-area channel doubled the win rate early in training (92% against 43% at 2 M steps), and a curriculum from the smaller board *hurt* on 8×8 in this run (one seed). A Hamiltonian-cycle agent, which uses the rules and learns nothing, wins every game at every size. ([note 05](notes/05_win_challenge.html))
+4. **Action masking made PPO reliable, and seed variance is large.** Masked PPO scores **26.2 ± 0.4** over three seeds (26.5, 26.3, 25.7); the unmasked arm scored 21.4, 18.7 and 7.9 (16.0 ± 7.1) because some seeds learn to circle until the starvation limit. One lucky unmasked seed would have looked as good as masking. Masked PPO is the best learned agent on the standard 12×12 board by score, and it processes about 8× more environment steps per second than the DQN on the same GPU (about 7 000 against 900), though the DQN is the more sample-efficient of the two. ([note 04](notes/04_ppo.html))
+5. **Winning is a different problem from scoring, and long training unlocks the big boards.** No agent that optimised the score ever filled a 12×12 board. A masked PPO agent with a reachable-area input channel fills a **6×6 board in 97% of games and 8×8 in 89%**, and 10×10 in **63%** after a long continued run. The 24 M-step 12×12 run won nothing (best game 120 of 141 cells); continuing it with more parallel environments produced the first 12×12 win after about 12 M further steps, and **68% of games (340 of 500) at the end of the extended run, 135 M further steps** (a single run that plateaued at 55–70%; see the trajectory above). A Hamiltonian-cycle agent, which uses the rules and learns nothing, wins every game at every size. ([note 05](notes/05_win_challenge.html))
+   - **The reachable-area channel helped most early.** On 6×6, the two agents differ only in that extra input plane (every agent sees the tail order): 92% against 43% wins at 2 M steps and 94% against 83% at 4 M. The channel gives the network what a planner would compute, so it is information, not a rule; the final 6×6 agent (97%) trained 6 M steps.
+   - **Curriculum transfer did not help on 8×8 in this run.** The agent initialised from the 6×6 weights won 4 of 500 games at its selected checkpoint, against 443 for the same recipe from scratch (one seed per variant, so an observation, not a verdict on curricula). With a flood-fill "trap shield" the curriculum run reached 248 wins, still below scratch; the shield is planning inside the agent, so the game labels it as not pure RL.
 6. **The bottleneck on a small GPU is not memory.** One job needs about 440 MB of a 4 GB card, but two DQN jobs or one PPO job saturate its compute. Profiling a PPO job showed it launch-bound (environment stepping is more than half of each iteration; GPU 44% busy), and the one lever that helped a lot was **more parallel environments** (256 → 2 048: +124% steps/s), whereas fp16 autocast and `channels_last` were slower on this chip. ([note 04, §8](notes/04_ppo.html))
 7. **Be careful what you call "best".** The best-checkpoint numbers are the maximum over about 20 noisy evaluations; the last-eight-checkpoint average of the 5 M-step DQN was 21.1 (range 16.9–24.9) against a reported best of 24.5. Everything here selects checkpoints on separate validation games, and reports seeds where there are several.
 
@@ -114,6 +131,14 @@ tools/                     Node tools (trace generator, model checker), README/G
 results/                   per-run summaries and benchmark data behind every table
 ```
 
+## Reproducibility notes
+
+- **Hardware:** all numbers come from one GTX 1650 Ti laptop (4 GB), Windows 11, torch 2.14, CUDA 13.0. Other GPUs give the same learning behaviour but different speed; on a CPU the PPO and DQN tryouts are far slower.
+- **Seeds:** training seeds are explicit (`--seed`); evaluation uses fixed seed ranges (test 100000–100499, validation 200000–200199), so any agent can be re-evaluated on exactly the same games.
+- **Determinism:** GPU training is not bit-for-bit reproducible, so re-running a seed gives a nearby, not identical, result (this is why the ablations use three seeds). The game engine, its Python mirror and the GPU environment are bit-identical (parity tests).
+- **Cost:** the whole course is about {{HOURS}} hours of training in total on that laptop (summed per-run time; some runs shared the GPU). The 12×12 extension alone ran about 135 M steps.
+- **Long runs:** every PPO run saves resumable state each logging epoch (`--resume`); `tools/ext_supervisor.py` restarts it after a crash and logs GPU temperature (peak 66 °C during the extended run, no hardware throttling).
+
 ## Reproducing and extending
 
 - Tests: `run.ps1 test` (JavaScript traces → Python and vectorised-environment parity, Gymnasium API checks) and `node tools/check_model.js` (exported networks: JavaScript inference equals PyTorch).
@@ -122,7 +147,17 @@ results/                   per-run summaries and benchmark data behind every tab
 
 ## Licence and citation
 
-Code, the game and trained model files: **MIT** ([LICENSE](LICENSE)). Notes, documentation and this README's text: **CC BY 4.0** ([LICENSE-docs](LICENSE-docs)). Please cite via [CITATION.cff](CITATION.cff).
+Code, the game and trained model files: **MIT** ([LICENSE](LICENSE)). Notes, documentation and this README's text: **CC BY 4.0** ([LICENSE-docs](LICENSE-docs)).
+Please cite via [CITATION.cff](CITATION.cff) (GitHub's "Cite this repository" button), or:
+
+```bibtex
+@software{snake_rl_from_scratch,
+  title  = {Snake RL from scratch: reinforcement-learning theory, hands-on code and a browser demo},
+  author = {Kartik},   % TODO: full name
+  year   = {2026},
+  url    = {https://github.com/OWNER/snake-rl-from-scratch}   % TODO: replace OWNER
+}
+```
 
 ## References
 
