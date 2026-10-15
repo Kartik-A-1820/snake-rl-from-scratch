@@ -4,7 +4,8 @@ title: "Snake RL from scratch: reinforcement-learning theory, hands-on code and 
 type: software
 authors:
   - given-names: "Kartik"
-repository-code: "https://github.com/OWNER/snake-rl-from-scratch"
+    family-names: "Anagawadi"
+repository-code: "https://github.com/Kartik-A-1820/snake-rl-from-scratch"
 license: MIT
 abstract: >-
   A free reinforcement-learning course built on one small game: tabular Q-learning, DQN and its upgrades,

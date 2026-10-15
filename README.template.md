@@ -1,4 +1,3 @@
-<!-- TODO before publishing: replace OWNER (GitHub username) in this file and in CITATION.cff, and the copyright name in LICENSE / LICENSE-docs. -->
 # Snake RL from scratch
 
 **A free reinforcement-learning course on one tiny game: theory, hands-on code, and a demo you can open in a browser.**
@@ -16,7 +15,7 @@ Tabular Q-learning → deep Q-networks and their upgrades → PPO → a "win the
 
 ![Win-challenge agents filling the board](docs/wins.gif)
 
-**▶ Play and watch the agents:** open [`game/index.html`](game/index.html) (double-click it; it runs from disk with no server), or the hosted version at `https://OWNER.github.io/snake-rl-from-scratch/` *(available once the repository is published, replace `OWNER`)*.
+**▶ Play and watch the agents:** open [`game/index.html`](game/index.html) (double-click it; it runs from disk with no server), or the hosted version at `https://kartik-a-1820.github.io/snake-rl-from-scratch/`.
 **📖 Read the course:** the [notes index](#the-course) (interactive HTML, DOCX, and one master book).
 
 ## What makes this more than a demo
@@ -100,7 +99,7 @@ A PPO job (large GPU batches) saturates the GPU alone, so extra PPO jobs only sp
 Windows / PowerShell (the scripts also run directly with `python` and `PYTHONPATH=python` on other systems):
 
 ```powershell
-git clone https://github.com/OWNER/snake-rl-from-scratch.git
+git clone https://github.com/Kartik-A-1820/snake-rl-from-scratch.git
 cd snake-rl-from-scratch
 powershell -ExecutionPolicy Bypass -File .\run.ps1 check    # what is installed (writes ENVIRONMENT.md), installs nothing
 powershell -ExecutionPolicy Bypass -File .\run.ps1 setup    # venv + the right PyTorch wheel (CUDA when a GPU is found) + dependencies
@@ -153,9 +152,9 @@ Please cite via [CITATION.cff](CITATION.cff) (GitHub's "Cite this repository" bu
 ```bibtex
 @software{snake_rl_from_scratch,
   title  = {Snake RL from scratch: reinforcement-learning theory, hands-on code and a browser demo},
-  author = {Kartik},   % TODO: full name
+  author = {Anagawadi, Kartik},
   year   = {2026},
-  url    = {https://github.com/OWNER/snake-rl-from-scratch}   % TODO: replace OWNER
+  url    = {https://github.com/Kartik-A-1820/snake-rl-from-scratch}
 }
 ```
 
