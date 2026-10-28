@@ -1,7 +1,7 @@
 # Snake RL from scratch
 
-**A free reinforcement-learning course on one tiny game: theory, hands-on code, and a demo you can open in a browser.**
-Tabular Q-learning → deep Q-networks and their upgrades → PPO → a "win the whole board" challenge. Each step has an interactive note, runnable code, multi-seed experiments and trained agents.
+**Reinforcement learning in Snake: implementations, experiments, and a browser demo.**
+Tabular Q-learning → deep Q-networks and their upgrades → PPO → a "win the whole board" challenge. The course includes interactive notes, runnable code, trained agents, and multi-seed ablations where available.
 
 > **Headline result.** Pure reinforcement learning (masked PPO with a reachable-area input channel, no planner) learns to **fill the whole board**
 > on 6×6 (**97%** of games), 8×8 (**89%**), 10×10 (**63%**) and the standard 12×12 (**68%**, 340 of 500), trained on **one laptop GPU
@@ -18,13 +18,13 @@ Tabular Q-learning → deep Q-networks and their upgrades → PPO → a "win the
 **▶ Play and watch the agents:** open [`game/index.html`](game/index.html) (double-click it; it runs from disk with no server), or the hosted version at `https://kartik-a-1820.github.io/snake-rl-from-scratch/`.
 **📖 Read the course:** the [notes index](#the-course) (interactive HTML, DOCX, and one master book).
 
-## What makes this more than a demo
+## Implementation and evaluation
 
-- **The same game in two languages, bit for bit.** The engine (rules, RNG, food placement) lives in `game/index.html` (JavaScript) and is mirrored in Python and as GPU tensors. Parity tests replay JavaScript traces in Python and the vectorised environment, so a number measured in one place is true in the others.
-- **An evaluation protocol you can trust.** Every score is the *greedy* policy on **500 held-out seeds** that are never used for training or checkpoint selection (checkpoints are chosen on 200 separate validation seeds). Comparisons use several training seeds and report mean ± sample standard deviation. A result from a single seed is labelled as one.
+- **Cross-language environment checks.** The engine (rules, RNG, food placement) lives in `game/index.html` (JavaScript) and is mirrored in Python and as GPU tensors. Parity tests replay JavaScript traces in Python and the vectorised environment, checking matched behavior on the covered cases.
+- **Evaluation protocol.** Every score is the *greedy* policy on **500 held-out seeds** that are never used for training or checkpoint selection (checkpoints are chosen on 200 separate validation seeds). Comparisons use several training seeds and report mean ± sample standard deviation. A result from a single seed is labelled as one.
 - **Negative results are results.** Several things in this repository did *not* work, and the notes say so with the numbers (see [Findings](#findings)).
-- **Every number in this README is generated** from files in the repository (`tools/make_readme.py`), not typed in.
-- **Engineering that a small GPU forces you to think about:** GPU-batched environments, a measured study of how many jobs can share one GPU, pause/resume for long runs.
+- **Result tables are generated** from repository records by `tools/make_readme.py`; the surrounding prose interprets those measurements.
+- **Small-GPU engineering:** GPU-batched environments, a measured study of how many jobs can share one GPU, pause/resume for long runs.
 
 ## The course
 
@@ -120,7 +120,7 @@ A *win* means every cell is filled. Win rates are over 500 held-out seeds; "mean
 
 ## Findings
 
-These are the results that surprised me, in the order they came up. Each is backed by the multi-seed tables above and discussed in the notes.
+The experiments below examine training schedules, architecture changes, reward design, and hardware limits. Their evidence includes multi-seed comparisons and explicitly labeled single-run observations.
 
 1. **A DQN that "doesn't learn" can be a schedule bug, not an algorithm problem.** The first CNN run scored below 1 (the tabular agent scores 20): only about 7 600 gradient steps and 7 target-network syncs in 1 M environment steps. Changing the replay ratio (more updates per environment step, smaller batches, more frequent syncs) and adding 3-step returns took the same network to **16.5 ± 2.0** (3 seeds). An 11-feature MLP with the original schedule had already reached 20.9, which is what pointed at the schedule. ([note 02](notes/02_dqn.html))
 2. **Reward shaping hurt.** Potential-based shaping (the theoretically safe kind, with a proof sketch and a test of the telescoping identity), naive "closer is good" shaping and a timeout penalty all scored below the unshaped baseline at 1 M steps; across 3 seeds potential shaping gave 11.7 against 16.5. Shaping preserves the optimal policy, it does not promise faster learning. ([note 02, §8b](notes/02_dqn.html))
@@ -151,7 +151,29 @@ A PPO job (large GPU batches) saturates the GPU alone, so extra PPO jobs only sp
 
 ## Quickstart
 
-Windows / PowerShell (the scripts also run directly with `python` and `PYTHONPATH=python` on other systems):
+For the browser demo, no Python environment or model download is needed: open `game/index.html`.
+
+For CPU environment tests, use Python 3.11 in a separate environment:
+
+```bash
+git clone https://github.com/Kartik-A-1820/snake-rl-from-scratch.git
+cd snake-rl-from-scratch
+python -m venv .venv
+```
+
+Activate with `source .venv/bin/activate` on Linux/macOS or `.venv\Scripts\Activate.ps1` in Windows PowerShell:
+
+```bash
+python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+python -m pip install -r requirements.txt
+python -m pytest python/tests/test_env.py -q
+```
+
+For JavaScript/Python parity checks, install Node.js, generate reference traces with `node tools/make_trace.js python/tests/js_traces.json`, and run `python -m pytest python/tests -q`. CPU tests do not reproduce GPU training speed or the published model results.
+
+For GPU training on Windows, use a separate compatible PyTorch environment and read [setup_cuda_windows.md](setup_cuda_windows.md). The convenience script's setup can install a CUDA wheel and creates a venv with system site packages; inspect it before running:
+
+Windows / PowerShell:
 
 ```powershell
 git clone https://github.com/Kartik-A-1820/snake-rl-from-scratch.git
@@ -187,9 +209,9 @@ results/                   per-run summaries and benchmark data behind every tab
 
 ## Reproducibility notes
 
-- **Hardware:** all numbers come from one GTX 1650 Ti laptop (4 GB), Windows 11, torch 2.14, CUDA 13.0. Other GPUs give the same learning behaviour but different speed; on a CPU the PPO and DQN tryouts are far slower.
+- **Hardware:** all numbers come from one GTX 1650 Ti laptop (4 GB), Windows 11, torch 2.14, CUDA 13.0. Other hardware and software environments require fresh validation of learning behavior and throughput. CPU training can be substantially slower.
 - **Seeds:** training seeds are explicit (`--seed`); evaluation uses fixed seed ranges (test 100000–100499, validation 200000–200199), so any agent can be re-evaluated on exactly the same games.
-- **Determinism:** GPU training is not bit-for-bit reproducible, so re-running a seed gives a nearby, not identical, result (this is why the ablations use three seeds). The game engine, its Python mirror and the GPU environment are bit-identical (parity tests).
+- **Determinism:** GPU training is not bit-for-bit reproducible, so re-running a seed gives a nearby, not identical, result (this is why the ablations use three seeds). Parity tests check matched behavior of the game engine, Python mirror, and tensor environment on their covered traces.
 - **Cost:** the whole course is about 26 hours of training in total on that laptop (summed per-run time; some runs shared the GPU). The 12×12 extension alone ran about 135 M steps.
 - **Long runs:** every PPO run saves resumable state each logging epoch (`--resume`); `tools/ext_supervisor.py` restarts it after a crash and logs GPU temperature (peak 66 °C during the extended run, no hardware throttling).
 
